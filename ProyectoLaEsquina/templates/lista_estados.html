@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Estados de Pedido</title>
+</head>
+<body>
+    <h1>Estados de Pedido</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+        </tr>
+        {% for estado in estados %}
+        <tr>
+            <td>{{ estado.id_estado }}</td>
+            <td>{{ estado.nombre_estado }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

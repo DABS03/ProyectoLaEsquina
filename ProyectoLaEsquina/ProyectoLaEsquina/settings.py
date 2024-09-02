@@ -55,7 +55,7 @@ ROOT_URLCONF = 'ProyectoLaEsquina.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Añade esta línea para incluir la carpeta templates en la raíz del proyecto
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +67,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'ProyectoLaEsquina.wsgi.application'
 
