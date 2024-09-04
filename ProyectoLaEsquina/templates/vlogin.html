@@ -1,4 +1,11 @@
 {% load static %}
+{% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <!DOCTYPE html>
 <html lang="es">
@@ -22,7 +29,7 @@
     <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
         <div class="card p-4 align-items-center" style="width: 450px; height: 490px; background-color: #B10B0D;">
             <img src="{% static 'img/circle_accou.png' %}" style="width: 200px;" alt="Icono de Usuario">
-            <form action="/login" method="post">
+            <form action="{% url 'login' %}" method="post">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="username" class="form-label" style="color: white;">Usuario</label>
