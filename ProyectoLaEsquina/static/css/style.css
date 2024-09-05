@@ -1,3 +1,7 @@
 .footer p{
     text-align: center;
 }
+
+.navbar{
+    position: fixed;
+}
