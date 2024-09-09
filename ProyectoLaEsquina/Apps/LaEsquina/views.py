@@ -64,3 +64,16 @@ def crear_cuenta(request):
     else:
         form = CrearCuentaForm()
     return render(request, 'crear_cuenta.html', {'form': form})
+
+@role_required(allowed_roles=['Cliente'])
+def cliente_view(request):
+    # Obtener todos los productos y servicios
+    productos = Producto.objects.all()
+    servicios = Servicio.objects.all()
+
+    # Pasar los productos y servicios al template
+    context = {
+        'productos': productos,
+        'servicios': servicios,
+    }
+    return render(request, 'cliente.html', context)

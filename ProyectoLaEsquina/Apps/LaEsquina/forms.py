@@ -15,7 +15,7 @@ class CrearCuentaForm(forms.ModelForm):
         cleaned_data = super().clean()
         contrasena = cleaned_data.get("contrasena")
         confirmar_contrasena = cleaned_data.get("confirmar_contrasena")
-
+        # Contraseñas deben ser iguals
         if contrasena and confirmar_contrasena and contrasena != confirmar_contrasena:
             self.add_error('confirmar_contrasena', 'Las contraseñas no coinciden.')
 

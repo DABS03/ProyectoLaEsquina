@@ -35,7 +35,7 @@
         </div>
     </nav>
 
-    <div class="container_filter"     style="padding-top: 15vh; display: flex; justify-content: space-between; align-items: center; width: 100%; padding-left: 5vh; padding-right: 5vh;">
+    <div class="container_filter" style="padding-top: 15vh; display: flex; justify-content: space-between; align-items: center; width: 100%; padding-left: 5vh; padding-right: 5vh;">
         
         <div style="display: flex; align-items: center;">
             <h6 style="margin-right: 10px;">Ordenar por:</h6>
@@ -48,111 +48,43 @@
             </select>
         </div>
     
-        
         <button class="btn" style="background-color: #B10B0D; color: white;">Solicitar servicios</button>
     </div>
 
     <div class="container" style="padding-top: 30px;">
-        <div class="row g-4"> <!-- Utiliza g-4 para añadir espacio entre las columnas -->
+        <div class="row g-4">
+            <!-- Recorrer productos y servicios -->
+            {% for producto in productos %}
             <div class="col-md-4">
                 <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
+                    <!-- Imagen omitida -->
                     <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
+                        <h5 class="card-title">{{ producto.nombre_producto }}</h5>
+                        <h6>Código: {{ producto.id_producto }}</h6>
                         <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput1" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput1" min="1" value="1" style="width: 100px;">
+                            <label for="quantityInput{{ forloop.counter }}" class="form-label me-2">Cantidad:</label>
+                            <input type="number" class="form-control" id="quantityInput{{ forloop.counter }}" min="1" value="1" style="width: 100px;">
                         </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <p class="card-text">{{ producto.descripcion }}</p>
                         <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
                     </div>
                 </div>
             </div>
-    
+            {% endfor %}
+            
+            {% for servicio in servicios %}
             <div class="col-md-4">
                 <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
+                    <!-- Imagen omitida -->
                     <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
-                        <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput2" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput2" min="1" value="1" style="width: 100px;">
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
+                        <h5 class="card-title">{{ servicio.nombre_servicio }}</h5>
+                        <h6>Código: {{ servicio.id_servicio }}</h6>
+                        <p class="card-text">{{ servicio.descripcion }}</p>
+                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Solicitar servicio</a>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4">
-                <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
-                        <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput2" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput2" min="1" value="1" style="width: 100px;">
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
-                        <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput2" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput2" min="1" value="1" style="width: 100px;">
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
-                        <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput2" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput2" min="1" value="1" style="width: 100px;">
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card" style="width: 100%;">
-                    <img src="..." class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Llanta 185/60</h5>
-                        <h6>Código:</h6>
-                        <div class="mb-3" style="display: flex; align-items: center;">
-                            <label for="quantityInput2" class="form-label me-2">Cantidad:</label>
-                            <input type="number" class="form-control" id="quantityInput2" min="1" value="1" style="width: 100px;">
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn" style="background-color: #B10B0D; color: white;">Agregar al carrito</a>
-                    </div>
-                </div>
-            </div>
-    
-    
-    
-            <!-- Añade más tarjetas aquí -->
+            {% endfor %}
         </div>
     </div>
 
