@@ -9,7 +9,7 @@
   </head>
   <body>
     <div class="container_main w-100"></div>
-    <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh;">
+    <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
         <div class="container">
             <a class="icon_esquina" href="#">
                 <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
@@ -36,7 +36,6 @@
     </nav>
 
     <div class="container_filter" style="padding-top: 15vh; display: flex; justify-content: space-between; align-items: center; width: 100%; padding-left: 5vh; padding-right: 5vh;">
-        
         <div style="display: flex; align-items: center;">
             <h6 style="margin-right: 10px;">Ordenar por:</h6>
         
@@ -46,17 +45,21 @@
                 <option value="2">Nombre</option>
                 <option value="3">Marca</option>
             </select>
+
+            <a class="icon_filter" href="#">
+                <img src="{% static 'img/filtrar.png' %}" alt="" width="30" height="30" style="margin-left: 10px;">
+            </a>
         </div>
     
         <button class="btn" style="background-color: #B10B0D; color: white;">Solicitar servicios</button>
     </div>
 
-    <div class="container" style="padding-top: 30px;">
+    <div class="container" style="padding-top: 20vh;">
         <div class="row g-4">
             <!-- Recorrer productos y servicios -->
             {% for producto in productos %}
             <div class="col-md-4">
-                <div class="card" style="width: 100%;">
+                <div class="card" style="width: 60%; padding: 10px;">
                     <!-- Imagen omitida -->
                     <div class="card-body">
                         <h5 class="card-title">{{ producto.nombre_producto }}</h5>
@@ -74,7 +77,7 @@
             
             {% for servicio in servicios %}
             <div class="col-md-4">
-                <div class="card" style="width: 100%;">
+                <div class="card" style="width: 60%; padding: 10px;">
                     <!-- Imagen omitida -->
                     <div class="card-body">
                         <h5 class="card-title">{{ servicio.nombre_servicio }}</h5>
@@ -88,7 +91,7 @@
         </div>
     </div>
 
-    <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 10vh; bottom: 0; z-index: 1000;">
+    <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 35px; bottom: 0; z-index: 1000;">
         <p style="text-align: center; margin: 0; padding: 10px;">&copy; 2024. Todos los derechos reservados</p>
     </footer>
 

@@ -42,7 +42,21 @@ def login_view(request):
 
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
-    return render(request, 'admin.html')
+    # Obtén todos los pedidos de productos y servicios
+    pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario').all()
+    pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
+    
+    # Obtén todos los usuarios
+    usuarios = Usuario.objects.all()
+    
+    context = {
+        'pedidos_productos': pedidos_productos,
+        'pedidos_servicios': pedidos_servicios,
+        'usuarios': usuarios,
+    }
+    return render(request, 'admin.html', context)
+
+
 
 @role_required(allowed_roles=['Cliente'])
 def cliente_view(request):
@@ -50,10 +64,18 @@ def cliente_view(request):
 
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):
-    return render(request, 'aseguradora.html')
-
-#def crear_cuenta_view(request):
-#    return render(request, 'crear_cuenta.html')
+    # Obtén el ID del usuario logueado desde la sesión
+    user_id = request.session.get('user_id')
+    
+    # Filtra los servicios basándote en el usuario logueado
+    servicios = PedidoServicio.objects.filter(id_pedido__id_usuario=user_id)
+    
+    # Pasar los servicios al template
+    context = {
+        'servicios': servicios,
+    }
+    
+    return render(request, 'aseguradora.html', context)
 
 def crear_cuenta(request):
     if request.method == 'POST':
