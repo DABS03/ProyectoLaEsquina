@@ -82,6 +82,7 @@ def crear_cuenta(request):
         form = CrearCuentaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()  # Guardar en base de datos
+            messages.success(request, 'Cuenta creada exitosamente. Ya puede iniciar sesión.')
             return redirect('login')  # Redirigir a la página de login después de crear la cuenta
     else:
         form = CrearCuentaForm()

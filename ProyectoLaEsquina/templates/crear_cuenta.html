@@ -1,5 +1,6 @@
+{% load form_filters %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,10 +19,18 @@
             color: white;
         }
         .btn-custom {
-            background-color: #B10B0D;
-            color: white;
-            border: none;
-            padding: 10px 30px;
+            background-color: #e0d9d9; /* Color de fondo */
+            color: rgb(10, 6, 6); /* Color del texto */
+            border: none; /* Sin borde */
+            padding: 12px 24px; /* Espaciado interno */
+            font-size: 16px; /* Tamaño de fuente */
+            font-weight: bold; /* Negrita */
+            border-radius: 5px; /* Bordes redondeados */
+            transition: background-color 0.3s ease; /* Transición suave para cambios de color */
+        }
+        .btn-custom:hover {
+            background-color: #A00A0A; /* Color de fondo en hover */
+            color: #fff; /* Color del texto en hover */
         }
     </style>
 </head>
@@ -31,32 +40,32 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="nombres">Nombres:</label>
-                {{ form.nombres }}
+                <label for="id_nombres">Nombres:</label>
+                {{ form.nombres|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="usuario">Usuario:</label>
-                {{ form.usuario }}
+                <label for="id_usuario">Usuario:</label>
+                {{ form.usuario|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="contrasena">Contraseña:</label>
-                {{ form.contrasena }}
+                <label for="id_contrasena">Contraseña:</label>
+                {{ form.contrasena|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="confirmar_contrasena">Confirmar Contraseña:</label>
-                {{ form.confirmar_contrasena }}
+                <label for="id_confirmar_contrasena">Confirmar Contraseña:</label>
+                {{ form.confirmar_contrasena|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="correo">Correo:</label>
-                {{ form.correo }}
+                <label for="id_correo">Correo:</label>
+                {{ form.correo|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="telefono">Teléfono:</label>
-                {{ form.telefono }}
+                <label for="id_telefono">Teléfono:</label>
+                {{ form.telefono|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="direccion">Dirección:</label>
-                {{ form.direccion }}
+                <label for="id_direccion">Dirección:</label>
+                {{ form.direccion|add_class:"form-control" }}
             </div>
             <button type="submit" class="btn btn-custom">GUARDAR</button>
         </form>

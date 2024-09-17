@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password
 
 #Base de datos LaEsquina
 
@@ -17,11 +18,14 @@ class Usuario(models.Model):
     direccion = models.CharField(max_length=255)
     usuario = models.CharField(max_length=50, unique=True)
     contrasena = models.CharField(max_length=255)
-    imagen = models.BinaryField(null=True, blank=True)
+    #imagen = models.ImageField(upload_to='imagenes/', null=True, blank=True)
     id_rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.usuario
+
+    #def set_password(self, raw_password):
+     #   self.contrasena = make_password(raw_password)
 
 class EstadoPedido(models.Model):
     id_estado = models.AutoField(primary_key=True)
