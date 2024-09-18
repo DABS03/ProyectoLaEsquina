@@ -56,7 +56,9 @@ def admin_view(request):
     }
     return render(request, 'admin.html', context)
 
-
+def ver_inventario(request):
+    productos = Producto.objects.all()  # Obtiene todos los productos
+    return render(request, 'ver_inventario.html', {'productos': productos})
 
 @role_required(allowed_roles=['Cliente'])
 def cliente_view(request):
