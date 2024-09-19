@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from Apps.LaEsquina import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,4 +12,5 @@ urlpatterns = [
     path('aseguradora_view/', views.aseguradora_view, name='aseguradora_view'),
     path('crear-cuenta/', views.crear_cuenta, name='crear_cuenta'),
     path('inventario/', views.ver_inventario, name='ver_inventario'),
-] 
+    path('v_producto/<int:producto_id>/', views.producto_view, name='v_producto'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

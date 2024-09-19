@@ -60,7 +60,14 @@
             {% for producto in productos %}
             <div class="col-md-4">
                 <div class="card" style="width: 60%; padding: 10px;">
-                    <!-- Imagen omitida -->
+                    <!-- Imagen del producto con enlace -->
+                    <a href="{% url 'v_producto' producto.id_producto %}">
+                        {% if producto.imagen %}
+                            <img src="{{ producto.imagen.url }}" alt="Imagen del producto" width="150" height="150" class="card-img-top">
+                        {% else %}
+                            <img src="{% static 'img/foto-no-disponible.jpg' %}" alt="Sin imagen" width="150" height="150" class="card-img-top">
+                        {% endif %}
+                    </a>
                     <div class="card-body">
                         <h5 class="card-title">{{ producto.nombre_producto }}</h5>
                         <h6>Código: {{ producto.id_producto }}</h6>
@@ -78,7 +85,7 @@
             {% for servicio in servicios %}
             <div class="col-md-4">
                 <div class="card" style="width: 60%; padding: 10px;">
-                    <!-- Imagen omitida -->
+                    <!-- Imagen del servicio omitida -->
                     <div class="card-body">
                         <h5 class="card-title">{{ servicio.nombre_servicio }}</h5>
                         <h6>Código: {{ servicio.id_servicio }}</h6>

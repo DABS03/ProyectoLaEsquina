@@ -117,8 +117,8 @@ USE_TZ = True
 
 # Media para fotos de perfil
 
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Static files (CSS, JavaScript, Images)

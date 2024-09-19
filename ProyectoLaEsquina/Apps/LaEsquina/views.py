@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .models import *
@@ -56,13 +56,27 @@ def admin_view(request):
     }
     return render(request, 'admin.html', context)
 
+@role_required(allowed_roles=['Admin'])
 def ver_inventario(request):
     productos = Producto.objects.all()  # Obtiene todos los productos
     return render(request, 'ver_inventario.html', {'productos': productos})
 
 @role_required(allowed_roles=['Cliente'])
 def cliente_view(request):
-    return render(request, 'cliente.html')
+    productos = Producto.objects.all()
+    servicios = Servicio.objects.all()
+
+    context = {
+        'productos': productos,
+        'servicios': servicios,
+    }
+    return render(request, 'cliente.html', context)
+
+
+def producto_view(request, producto_id):
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    return render(request, 'v_producto.html', {'producto': producto})
+
 
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):

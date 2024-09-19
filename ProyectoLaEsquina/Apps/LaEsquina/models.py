@@ -68,7 +68,7 @@ class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)
     nombre_producto = models.CharField(max_length=100)
     cantidad_stock = models.PositiveIntegerField()
-    imagen = models.BinaryField(null=True, blank=True)
+    imagen = models.ImageField(upload_to='productos/', null=True, blank=True)  # Cambiado a ImageField
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     id_categoria_producto = models.ForeignKey('CategoriaProducto', on_delete=models.CASCADE)
