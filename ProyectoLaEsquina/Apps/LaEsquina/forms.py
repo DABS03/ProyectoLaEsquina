@@ -1,5 +1,7 @@
 from django import forms
-from .models import Usuario, Rol
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Usuario, Rol, Producto, CategoriaProducto
 
 class CrearCuentaForm(forms.ModelForm):
     contrasena = forms.CharField(widget=forms.PasswordInput())
@@ -30,3 +32,41 @@ class CrearCuentaForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+
+def agregar_producto(request):
+    categorias = CategoriaProducto.objects.all()
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')  # Cambiado a 'nombre'
+        precio = request.POST.get('precio')
+        cantidad = request.POST.get('cantidad')
+        categoria_id = request.POST.get('categoria')
+        descripcion = request.POST.get('descripcion')
+        imagen = request.FILES.get('imagen')  # Si la imagen es opcional, maneja su valor
+
+        # Validación para asegurar que los campos obligatorios no estén vacíos
+        if not all([nombre, precio, cantidad, categoria_id, descripcion]):
+            messages.error(request, 'Por favor, complete todos los campos obligatorios.')
+            return render(request, 'agregar_pro.html', {'categorias': categorias})
+
+        try:
+            # Obtener la categoría seleccionada
+            categoria = CategoriaProducto.objects.get(id_categoria_producto=categoria_id)
+            
+            # Crear el producto
+            producto = Producto(
+                nombre_producto=nombre,
+                precio=precio,
+                cantidad_stock=cantidad,
+                descripcion=descripcion,
+                id_categoria_producto=categoria,
+                imagen=imagen  # Asigna la imagen si está presente
+            )
+            producto.save()
+            messages.success(request, 'Producto agregado exitosamente.')
+            return redirect('ver_inventario')  # Redirige a la vista del inventario
+        except CategoriaProducto.DoesNotExist:
+            messages.error(request, 'La categoría seleccionada no existe.')
+
+    return render(request, 'agregar_pro.html', {'categorias': categorias})

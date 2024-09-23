@@ -120,6 +120,10 @@ USE_TZ = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Sesiones
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Asegúrate de que estás usando el backend correcto
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
