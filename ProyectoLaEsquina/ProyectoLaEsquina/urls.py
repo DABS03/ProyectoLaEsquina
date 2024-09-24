@@ -16,4 +16,6 @@ urlpatterns = [
     path('v_producto/<int:producto_id>/', views.producto_view, name='v_producto'),
     path('agregar-pro/', views.agregar_pro, name='agregar_pro'),
     path('logout/', views.logout_view, name='logout'),  
+    path('edit_pro/<int:producto_id>/', views.edit_pro, name='editar_producto'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

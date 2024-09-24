@@ -23,8 +23,6 @@ class Usuario(models.Model):
     def __str__(self):
         return self.usuario
 
-
-
 class EstadoPedido(models.Model):
     id_estado = models.AutoField(primary_key=True)
     nombre_estado = models.CharField(max_length=50)

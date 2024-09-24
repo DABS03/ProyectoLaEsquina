@@ -70,3 +70,21 @@ def agregar_producto(request):
             messages.error(request, 'La categoría seleccionada no existe.')
 
     return render(request, 'agregar_pro.html', {'categorias': categorias})
+
+class ProductoForm(forms.ModelForm):
+    class Meta:
+        model = Producto
+        fields = ['nombre_producto', 'precio', 'cantidad_stock', 'id_categoria_producto', 'descripcion', 'imagen']
+        
+        labels = {
+            'nombre_producto': 'Nombre',
+            'precio': 'Precio',
+            'cantidad_stock': 'Cantidad',
+            'id_categoria_producto': 'Categoría',
+            'descripcion': 'Descripción',
+            'imagen': 'Imagen',
+        }
+        
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 4}),
+        }

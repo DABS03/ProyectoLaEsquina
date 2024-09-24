@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages
 from .models import *
-from .forms import CrearCuentaForm
+from .forms import CrearCuentaForm, ProductoForm
 
 
 def role_required(allowed_roles):
@@ -64,6 +64,36 @@ def admin_view(request):
 def ver_inventario(request):
     productos = Producto.objects.all()  
     return render(request, 'ver_inventario.html', {'productos': productos})
+
+@role_required(allowed_roles=['Admin'])
+def edit_pro(request, producto_id):
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+
+    if request.method == 'POST':
+        # Procesar los datos del formulario
+        nombre = request.POST.get('nombre')
+        precio = request.POST.get('precio')
+        cantidad = request.POST.get('cantidad')
+        categoria = request.POST.get('categoria')
+        descripcion = request.POST.get('descripcion')
+        imagen = request.FILES.get('imagen')
+
+        # Actualizar los campos del producto
+        producto.nombre_producto = nombre
+        producto.precio = precio
+        producto.cantidad_stock = cantidad
+        producto.id_categoria_producto_id = categoria
+        producto.descripcion = descripcion
+        
+        # Actualizar imagen solo si se subió una nueva
+        if imagen:
+            producto.imagen = imagen
+        
+        producto.save()  # Guardar los cambios en la base de datos
+        return redirect('ver_inventario')  # Cambia esto por el nombre de la vista deseada
+
+    return render(request, 'edit_pro.html', {'producto': producto, 'categorias': CategoriaProducto.objects.all()})
+
 
 @role_required(allowed_roles=['Admin'])
 def agregar_pro(request):
