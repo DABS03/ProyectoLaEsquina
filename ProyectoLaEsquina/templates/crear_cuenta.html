@@ -19,56 +19,86 @@
             color: white;
         }
         .btn-custom {
-            background-color: #e0d9d9; /* Color de fondo */
-            color: rgb(10, 6, 6); /* Color del texto */
-            border: none; /* Sin borde */
-            padding: 12px 24px; /* Espaciado interno */
-            font-size: 16px; /* Tamaño de fuente */
-            font-weight: bold; /* Negrita */
-            border-radius: 5px; /* Bordes redondeados */
-            transition: background-color 0.3s ease; /* Transición suave para cambios de color */
+            background-color: #e0d9d9; 
+            color: rgb(10, 6, 6); 
+            border: none; 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            transition: background-color 0.3s ease; 
         }
         .btn-custom:hover {
-            background-color: #A00A0A; /* Color de fondo en hover */
-            color: #fff; /* Color del texto en hover */
+            background-color: #A00A0A; 
+            color: #fff; 
         }
     </style>
 </head>
 <body>
-    <div class="container_main">
+    <div class="container_main" style="margin-bottom: 15vh;">
         <h2 class="text-center">CREAR CUENTA</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
             <div class="mb-3">
                 <label for="id_nombres">Nombres:</label>
                 {{ form.nombres|add_class:"form-control" }}
+                {% for error in form.nombres.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_usuario">Usuario:</label>
                 {{ form.usuario|add_class:"form-control" }}
+                {% for error in form.usuario.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_contrasena">Contraseña:</label>
                 {{ form.contrasena|add_class:"form-control" }}
+                {% for error in form.contrasena.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_confirmar_contrasena">Confirmar Contraseña:</label>
                 {{ form.confirmar_contrasena|add_class:"form-control" }}
+                {% for error in form.confirmar_contrasena.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_correo">Correo:</label>
                 {{ form.correo|add_class:"form-control" }}
+                {% for error in form.correo.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_telefono">Teléfono:</label>
                 {{ form.telefono|add_class:"form-control" }}
+                {% for error in form.telefono.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <div class="mb-3">
                 <label for="id_direccion">Dirección:</label>
                 {{ form.direccion|add_class:"form-control" }}
+                {% for error in form.direccion.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
             </div>
+            
             <button type="submit" class="btn btn-custom">GUARDAR</button>
         </form>
     </div>
+    
 </body>
 </html>

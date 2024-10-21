@@ -1,7 +1,10 @@
+import re
 from django import forms
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Usuario, Rol, Producto, CategoriaProducto
+from django.core.exceptions import ValidationError
+
 
 class CrearCuentaForm(forms.ModelForm):
     contrasena = forms.CharField(widget=forms.PasswordInput())
@@ -12,27 +15,54 @@ class CrearCuentaForm(forms.ModelForm):
         model = Usuario
         fields = ['nombres', 'usuario', 'contrasena', 'confirmar_contrasena', 'correo', 'telefono', 'direccion']
 
+    def clean_nombres(self):
+        nombres = self.cleaned_data.get('nombres')
+        # Verificar que solo contenga letras
+        if not re.match(r'^[a-zA-Z\s]+$', nombres):
+            raise ValidationError('El nombre solo puede contener letras y espacios.')
+        
+        return nombres
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono').strip()
+
+        # Verificación teléfono de 8 dígitos
+        if not telefono.isdigit() or len(telefono) != 8:
+            raise ValidationError('El teléfono debe ser un número entero de 8 dígitos.')
+        
+        return telefono
+
+    def clean_correo(self):
+        correo = self.cleaned_data.get('correo').strip()
+
+        # Verificar si el correo tiene la estructura correcta
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
+            raise ValidationError('El correo debe tener el formato nombre@correo.com.')
+        
+        return correo
+
+    def clean_usuario(self):
+        usuario = self.cleaned_data.get('usuario')
+
+        # Eliminar todos los espacios 
+        usuario = usuario.replace(' ', '')
+
+        # Verificar que no haya mayúsculas en el usuario
+        if any(char.isupper() for char in usuario):
+            raise ValidationError('El usuario no debe contener letras mayúsculas.')
+        
+        return usuario
+
+
     def clean(self):
         cleaned_data = super().clean()
         contrasena = cleaned_data.get("contrasena")
         confirmar_contrasena = cleaned_data.get("confirmar_contrasena")
-        # Contraseñas deben ser iguales
+
+        # Verificar que las contraseñas coincidan
         if contrasena and confirmar_contrasena and contrasena != confirmar_contrasena:
             self.add_error('confirmar_contrasena', 'Las contraseñas no coinciden.')
-
         return cleaned_data
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        # Asignar el rol de cliente a todos los usuarios creados
-        rol_cliente = Rol.objects.get(nombre_rol='Cliente')
-        user.id_rol = rol_cliente
-        # Asignar la contraseña directamente sin cifrar
-        user.contrasena = self.cleaned_data['contrasena']
-        if commit:
-            user.save()
-        return user
-
 
 
 def agregar_producto(request):

@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
 from django.contrib import messages
 from .models import *
-from .forms import CrearCuentaForm, ProductoForm
+from .forms import CrearCuentaForm
+from django.contrib.auth import logout as auth_logout
+import requests
+from django.shortcuts import redirect
+from urllib.parse import urlencode
+from allauth.socialaccount.models import SocialAccount
+
 
 
 def role_required(allowed_roles):
@@ -19,31 +23,106 @@ def role_required(allowed_roles):
     return decorator
 
 def login_view(request):
+    # Lógica para inicio de sesión con usuario y contraseña
     if request.method == 'POST':
-        username = request.POST['username'].strip()  # Aplicar trim (strip)
-        password = request.POST['password']
-        
-        try:
-            user = Usuario.objects.get(usuario=username)
-            if user.contrasena == password:
-                request.session['user_id'] = user.id_usuario
-                request.session['user_role'] = user.id_rol.nombre_rol
-                request.session['username'] = user.usuario.strip()  # Aplicar trim al nombre de usuario al almacenarlo
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
 
-                if user.id_rol.nombre_rol == 'Admin':
-                    return redirect('admin_view')
-                elif user.id_rol.nombre_rol == 'Cliente':
-                    return redirect('cliente_view')
-                elif user.id_rol.nombre_rol == 'Aseguradora':
-                    return redirect('aseguradora_view')
-            else:
-                messages.error(request, 'Contraseña incorrecta')
-        except Usuario.DoesNotExist:
-            messages.error(request, 'Usuario no existe')
+        if username and password:
+            try:
+                user = Usuario.objects.get(usuario=username)
+                if user.contrasena == password:
+                    # Iniciar sesión en la sesión de Django
+                    request.session['user_id'] = user.id_usuario
+                    request.session['user_role'] = user.id_rol.nombre_rol
+                    request.session['username'] = user.usuario.strip()
+
+                    # Redirigir a la vista correspondiente según el rol
+                    if user.id_rol.nombre_rol == 'Admin':
+                        return redirect('admin_view')
+                    elif user.id_rol.nombre_rol == 'Cliente':
+                        return redirect('cliente_view')
+                    elif user.id_rol.nombre_rol == 'Aseguradora':
+                        return redirect('aseguradora_view')
+                else:
+                    messages.error(request, 'Contraseña incorrecta')
+            except Usuario.DoesNotExist:
+                messages.error(request, 'Usuario no existe')
 
     return render(request, 'vlogin.html')
 
 
+def google_login(request):
+    google_auth_url = 'https://accounts.google.com/o/oauth2/v2/auth'
+    params = {
+        'client_id': '594841376131-ltsbl6ovami2ocqhfbstc0nfq6da33td.apps.googleusercontent.com',
+        'redirect_uri': 'http://127.0.0.1:8000/oauth2callback/',  # Debe coincidir con tu configuración en Google
+        'response_type': 'code',
+        'scope': 'email profile',
+    }
+    url = f"{google_auth_url}?{urlencode(params)}"
+    return redirect(url)
+
+def oauth2callback(request):
+    code = request.GET.get('code')
+    token_url = 'https://oauth2.googleapis.com/token'
+
+    # Intercambia el código por un token de acceso
+    response = requests.post(token_url, data={
+        'code': code,
+        'client_id': '594841376131-ltsbl6ovami2ocqhfbstc0nfq6da33td.apps.googleusercontent.com',
+        'client_secret': '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',
+        'redirect_uri': 'http://127.0.0.1:8000/oauth2callback/',
+        'grant_type': 'authorization_code',
+    })
+    
+    # Maneja la respuesta
+    if response.status_code == 200:
+        token_data = response.json()
+        access_token = token_data.get('access_token')
+
+        # Usa el token de acceso para obtener la información del usuario
+        user_info_response = requests.get(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
+
+        if user_info_response.status_code == 200:
+            user_info = user_info_response.json()
+            email = user_info.get('email', '').strip().lower()
+
+            try:
+                usuario = Usuario.objects.get(correo__iexact=email)  # Busca el usuario en tu tabla 'usuario' basado en el correo
+                
+                # Guardar la información de la sesión
+                request.session['user_id'] = usuario.id_usuario
+                request.session['user_role'] = usuario.id_rol.nombre_rol
+                request.session['username'] = usuario.usuario.strip()
+
+                # Redirigir según el rol del usuario
+                if usuario.id_rol.nombre_rol == 'Admin':
+                    return redirect('admin_view')
+                elif usuario.id_rol.nombre_rol == 'Cliente':
+                    return redirect('cliente_view')
+                elif usuario.id_rol.nombre_rol == 'Aseguradora':
+                    return redirect('aseguradora_view')
+            except Usuario.DoesNotExist:
+                messages.error(request, 'El correo autenticado con Google no está registrado en el sistema.')
+                return redirect('login')   
+
+        else:
+            messages.error(request, 'Error al obtener información del usuario de Google.')
+            return redirect('login')
+    else:
+        messages.error(request, 'Error al autenticar con Google.')
+        return redirect('login')
+    
+
+def logout_view(request):
+    # Cerrar sesión en Django y también en Google
+    auth_logout(request)
+    messages.success(request, 'Sesión cerrada exitosamente')
+    return redirect('login')
 
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
@@ -182,16 +261,21 @@ def aseguradora_view(request):
 
 def crear_cuenta(request):
     if request.method == 'POST':
-        form = CrearCuentaForm(request.POST, request.FILES)
+        form = CrearCuentaForm(request.POST)
+
         if form.is_valid():
-            form.save()  
-            messages.success(request, 'Cuenta creada exitosamente. Ya puede iniciar sesión.')
-            return redirect('login')  
+            usuario = form.save(commit=False)
+            rol_cliente = Rol.objects.get(nombre_rol='Cliente')
+            usuario.id_rol = rol_cliente
+            usuario.save()
+            messages.success(request, 'Cuenta creada exitosamente.')
+            return redirect('login')
+
     else:
         form = CrearCuentaForm()
+
     return render(request, 'crear_cuenta.html', {'form': form})
 
-#@role_required(allowed_roles=['Cliente'])
 def cliente_view(request):
 
     productos = Producto.objects.all()
@@ -203,8 +287,10 @@ def cliente_view(request):
     }
     return render(request, 'cliente.html', context)
 
-    from django.contrib.auth import logout
+from django.contrib.auth import logout
 
 def logout_view(request):
-    logout(request) 
-    return redirect('login')  
+    # Cerrar sesión en Django y también en Google
+    auth_logout(request)
+    messages.success(request, 'Sesión cerrada exitosamente')
+    return redirect('login')

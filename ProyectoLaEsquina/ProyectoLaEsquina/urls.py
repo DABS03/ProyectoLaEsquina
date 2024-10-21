@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from Apps.LaEsquina import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -15,7 +15,11 @@ urlpatterns = [
     path('inventario/', views.ver_inventario, name='ver_inventario'),
     path('v_producto/<int:producto_id>/', views.producto_view, name='v_producto'),
     path('agregar-pro/', views.agregar_pro, name='agregar_pro'),
-    path('logout/', views.logout_view, name='logout'),  
+    path('logout/', views.logout_view, name='logout'),
     path('edit_pro/<int:producto_id>/', views.edit_pro, name='editar_producto'),
+
+    path('auth/', include('allauth.urls')),
+    path('google_login/', views.google_login, name='google_login'),
+    path('oauth2callback/', views.oauth2callback, name='oauth2callback'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
