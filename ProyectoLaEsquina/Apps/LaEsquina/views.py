@@ -246,6 +246,79 @@ def producto_view(request, producto_id):
         'is_cliente': is_cliente,  
     })
 
+# INICIO Carrito
+@role_required(allowed_roles=['Cliente'])
+def agregar_al_carrito(request, producto_id):
+    if request.method == 'POST':
+        cantidad = int(request.POST.get('cantidad', 1))  # Obtener la cantidad seleccionada
+        user_id = request.session.get('user_id')
+
+        if not user_id:
+            messages.error(request, 'Debe iniciar sesión para agregar productos al carrito.')
+            return redirect('login')
+
+        producto = get_object_or_404(Producto, id_producto=producto_id)
+
+        # Obtener o crear el carrito del usuario
+        carrito, created = Carrito.objects.get_or_create(id_usuario_id=user_id)
+
+        # Verificar si el producto ya está en el carrito
+        item_carrito, item_created = ItemsCarrito.objects.get_or_create(
+            id_carrito=carrito,
+            id_producto=producto,
+            defaults={
+                'cantidad': cantidad,
+                'precio': producto.precio,
+                'subtotal': producto.precio * cantidad
+            }
+        )
+
+        # Si ya existía, solo actualiza la cantidad y el subtotal
+        if not item_created:
+            item_carrito.cantidad += cantidad
+            item_carrito.subtotal = item_carrito.cantidad * item_carrito.precio
+            item_carrito.save()
+
+        messages.success(request, f'{producto.nombre_producto} agregado al carrito.')
+        return redirect('cliente_view')
+
+    return redirect('cliente_view')
+
+@role_required(allowed_roles=['Cliente'])
+def mi_carrito_view(request):
+    user_id = request.session.get('user_id')
+    carrito = Carrito.objects.filter(id_usuario_id=user_id).first()
+
+    if carrito:
+        items = ItemsCarrito.objects.filter(id_carrito=carrito)
+        # Calcular el total sumando el subtotal de cada item
+        total = sum(item.subtotal for item in items)  # Suma de subtotales
+    else:
+        items = []
+        total = 0  # Total es 0 si no hay carrito
+
+    context = {
+        'items': items,
+        'total': total,  # Pasar el total al contexto
+    }
+
+    return render(request, 'mi_carrito.html', context)
+
+
+@role_required(allowed_roles=['Cliente'])
+def eliminar_del_carrito(request):
+    if request.method == "POST":
+        items_a_eliminar = request.POST.getlist('items_a_eliminar')  # Obtiene una lista de IDs a eliminar
+        if items_a_eliminar:
+            # Elimina los items del carrito
+            ItemsCarrito.objects.filter(id_itemsCarrito__in=items_a_eliminar).delete()
+            messages.success(request, 'Productos eliminados del carrito.')
+        else:
+            messages.warning(request, 'No se seleccionó ningún producto para eliminar.')
+
+    return redirect('mi_carrito')  # Redirige de nuevo a la vista del carrito
+
+# FIN Carrito
 
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):
@@ -294,3 +367,11 @@ def logout_view(request):
     auth_logout(request)
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('login')
+
+
+# Vista para eliminar el producto
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    producto.delete()
+    messages.success(request, 'Producto eliminado con éxito.')
+    return redirect('ver_inventario') 

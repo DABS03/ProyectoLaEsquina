@@ -23,7 +23,7 @@
 
         <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
             <div class="container">
-                <a class="icon_esquina" href="#">
+                <a class="icon_esquina" href="{% url 'cliente_view' %}">
                     <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
                 </a>
                 <ul class="nav justify-content-end align-items-center">
@@ -37,8 +37,8 @@
                         </h4>
                     </li>
                     <li class="nav-item me-4">
-                        <a class="icon_noti" href="#">
-                            <img src="{% static 'img/icon_noti.png' %}" alt="" width="50" height="50">
+                        <a class="icon_carrito" href="{% url 'mi_carrito' %}">
+                            <img src="{% static 'img/icon_carrito.png' %}" alt="" width="50" height="50">
                         </a>
                     </li>
                     <li class="nav-item dropdown">
