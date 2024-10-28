@@ -247,6 +247,8 @@ def producto_view(request, producto_id):
     })
 
 # INICIO Carrito
+
+
 @role_required(allowed_roles=['Cliente'])
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
@@ -280,6 +282,7 @@ def agregar_al_carrito(request, producto_id):
             item_carrito.save()
 
         messages.success(request, f'{producto.nombre_producto} agregado al carrito.')
+        
         return redirect('cliente_view')
 
     return redirect('cliente_view')

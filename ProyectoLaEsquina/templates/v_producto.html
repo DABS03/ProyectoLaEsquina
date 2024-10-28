@@ -73,7 +73,7 @@
                 <h4 style="color: white;">{{ producto.nombre_producto }}</h4>
                 <h4 style="color: white;">Precio: ${{ producto.precio }}</h4>
                 <h4 style="color: white;">Código: {{ producto.id_producto }}</h4>
-
+            
                 <div class="cant" style="display: flex; align-items: center; margin-top: 20px;">
                     <h4 style="color: white; margin-right: 10px;">Cantidad:</h4>
                     <div class="d-flex align-items-center">
@@ -82,9 +82,15 @@
                         <button class="btn btn-custom" onclick="incrementQuantity(this)">+</button>
                     </div>
                 </div>
-
-                <button class="btn btn-custom" style="margin-top: 5vh;">Agregar al carrito</button>
+            
+                <form action="{% url 'agregar_al_carrito' producto.id_producto %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="cantidad" id="cantidad{{ producto.id }}" value="1">
+                    <button type="submit" class="btn btn-custom" style="margin-top: 5vh;">Agregar al carrito</button>
+                </form>
+                
             </div>
+            
 
             <!-- Pestañas y contenido -->
             <div style="position: absolute; bottom: 10px; left: 20px; margin-left: 10vh;">
@@ -142,6 +148,8 @@
             let quantityElement = button.previousElementSibling;
             let quantity = parseInt(quantityElement.innerText);
             quantityElement.innerText = quantity + 1;
+            let productId = button.closest('div').querySelector('.quantity').id.replace('quantity', '');
+            document.getElementById(`cantidad${productId}`).value = quantity + 1; // Actualiza el valor del input oculto
         }
 
         function decrementQuantity(button) {
@@ -149,8 +157,11 @@
             let quantity = parseInt(quantityElement.innerText);
             if (quantity > 1) {
                 quantityElement.innerText = quantity - 1;
+                let productId = button.closest('div').querySelector('.quantity').id.replace('quantity', '');
+                document.getElementById(`cantidad${productId}`).value = quantity - 1; // Actualiza el valor del input oculto
             }
         }
+
     </script>
 </body>
 </html>
