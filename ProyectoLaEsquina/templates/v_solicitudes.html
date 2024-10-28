@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
+    {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>La Esquina</title>
@@ -8,53 +9,23 @@
   </head>
   <body>
     <div class="container_main w-100"></div>
-        <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
-            <div class="container">
-                <a class="icon_esquina" href="#">
-                    <img src="/ProyectoLaEsquina/ProyectoLaEsquina/static/img/icon_esquina_todos.jpg" alt="" width="200" height="60">
-                </a>
-        
-                <ul class="nav justify-content-end">
-                  <li class="nav-item me-4 dropdown">
-                    <a class="icon_noti dropdown-toggle" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <img src="/ProyectoLaEsquina/ProyectoLaEsquina/static/img/icon_noti.png" alt="" width="50" height="50">
-                    </a>
-                  
-                    <div class="dropdown-menu p-3" aria-labelledby="dropdownMenuLink" style="width: 300px;">
-                      <table class="table table-bordered table-striped">
-                        <thead>
-                          <tr>
-                            <th>Proceso</th>
-                            <th>Estado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>Pedido #12345</td>
-                            <td>En preparación</td>
-                          </tr>
-                          <tr>
-                            <td>Solicitud #54321</td>
-                            <td>Respondida</td>
-                          </tr>
-                          <!-- Añade más filas según sea necesario -->
-                        </tbody>
-                      </table>
-                    </div>
-                  </li>
-                    
-                    <li class="nav-item">
-                        <a class="icon_noti" href="#">
-                            <img src="/ProyectoLaEsquina/ProyectoLaEsquina/static/img/circle_accou.png" alt="" width="50" height="50">
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        
-
-        
+    <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
+      <div class="container">
+          <a class="icon_esquina" href="{% url 'admin_view' %}">
+              <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
+          </a>
+          <ul class="nav justify-content-end">
+              <li class="nav-item dropdown">
+                  <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <img src="{% static 'img/circle_accou.png' %}" alt="" width="50" height="50">
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                      <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                  </ul>
+              </li>
+          </ul>
+      </div>
+    </nav>
 
     </div>
 
@@ -86,58 +57,31 @@
                 <div style="background-color: white; padding: 20px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
                   <table class="table table-striped">
                     <thead style="background-color: white;">
-                      <tr>
-                        <th scope="col">Nombre de cliente</th>
-                        <th scope="col">Asunto</th>
-                        <th scope="col">Descripción</th>
-                        <th scope="col">Fecha de solicitud</th>
-                      </tr>
+                      <thead class="bg-light">
+                        <tr>
+                            <th scope="col">N° Pedido</th>
+                            <th scope="col">Nombre de cliente</th>
+                            <th scope="col">Servicio</th>
+                            <th scope="col">Detalles</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Subtotal</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Detalles</th>
+                        </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-                      <tr>
-                        <td>Chepito</td>
-                        <td>Problemas con el coche</td>
-                        <td class="text">Lorem Ipsum is simply dummy text </td>
-                        <td>19/10/2024</td>
-                        <td><a class="detail" href="#">Ver más...</a></td>
-                      </tr>
-
-                      
+                        {% for pedido in pedidos_servicios %}
+                        <tr>
+                            <th scope="row">{{ pedido.id_pedido.id_pedido }}</th>
+                            <td>{{ pedido.id_pedido.id_usuario.nombres }}</td>
+                            <td>{{ pedido.id_servicio.nombre_servicio }}</td>
+                            <td><a class="detail" href="#">Ver más</a></td>
+                            <td>{{ pedido.id_pedido.fecha_pedido }}</td>
+                            <td>{{ pedido.precio }}</td>
+                            <td>{{ pedido.id_pedido.id_estado.nombre_estado }}</td>
+                            <td><a class="detail" href="#">Ver Detalles</a></td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                   </table>
                 </div>

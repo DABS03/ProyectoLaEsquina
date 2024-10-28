@@ -124,12 +124,15 @@ def logout_view(request):
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('login')
 
+################################
+################################
+# INICIO ADMIN
+
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
     pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario').all()
     pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
     
- 
     usuarios = Usuario.objects.all()
     
     context = {
@@ -222,6 +225,33 @@ def agregar_pro(request):
             messages.error(request, f'Ocurrió un error inesperado: {str(e)}')
 
     return render(request, 'agregar_pro.html', {'categorias': categorias})
+
+@role_required(allowed_roles=['Admin'])
+def historial_pedidos(request):
+    pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario').all()
+    usuarios = Usuario.objects.all()
+    
+    context = {
+        'pedidos_productos': pedidos_productos,
+        'usuarios': usuarios,
+    }
+    return render(request, 'v_historialpedidos.html', context)
+
+@role_required(allowed_roles=['Admin'])
+def historial_solicitudes(request):
+    pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
+    
+    usuarios = Usuario.objects.all()
+    
+    context = {
+        'pedidos_servicios': pedidos_servicios,
+        'usuarios': usuarios,
+    }
+    return render(request, 'v_solicitudes.html', context)
+
+# FIN ADMIN
+################################
+################################
 
 def cliente_view(request):
     productos = Producto.objects.all()
@@ -322,6 +352,12 @@ def eliminar_del_carrito(request):
     return redirect('mi_carrito')  # Redirige de nuevo a la vista del carrito
 
 # FIN Carrito
+
+@role_required(allowed_roles=['Cliente'])
+def realizar_pedido(request):
+
+    return render(request, 'view_realizarpedido.html')
+
 
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):
