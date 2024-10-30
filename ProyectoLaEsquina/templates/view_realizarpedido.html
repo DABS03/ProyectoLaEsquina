@@ -20,131 +20,106 @@
     </style>
 </head>
 <body>
+    <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
+        <div class="container">
+            <a class="icon_esquina" href="{% url 'cliente_view' %}">
+                <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
+            </a>
+            <ul class="nav justify-content-end align-items-center">
+                <li class="nav-item me-4">
+                    <a class="icon_carrito" href="{% url 'mi_carrito' %}">
+                        <img src="{% static 'img/icon_carrito.png' %}" alt="" width="50" height="50">
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{% static 'img/circle_accou.png' %}" alt="" width="50" height="50">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                        {% if request.session.user_id %}
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                        {% else %}
+                            <li><a class="dropdown-item" href="{% url 'login' %}">Iniciar sesión</a></li>
+                        {% endif %}
+                    </ul>                    
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-        <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
-            <div class="container">
-                <a class="icon_esquina" href="{% url 'cliente_view' %}">
-                    <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
-                </a>
-                <ul class="nav justify-content-end align-items-center">
-                    <li class="nav-item me-4">
-                        <a class="icon_carrito" href="{% url 'mi_carrito' %}">
-                            <img src="{% static 'img/icon_carrito.png' %}" alt="" width="50" height="50">
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{% static 'img/circle_accou.png' %}" alt="" width="50" height="50">
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                            {% if request.session.user_id %}
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
-                            {% else %}
-                                <li><a class="dropdown-item" href="{% url 'login' %}">Iniciar sesión</a></li>
-                            {% endif %}
-                        </ul>                    
-                    </li>
-                </ul>
-            </div>
-        </nav>
-        
+    <section class="container_main" style="padding-top: 20vh; display: flex; justify-content: center; margin-left: 20px;">
+      <div style="background-color: #B10B0D; padding: 20px; width: 100vh;">
+          <h2 style="color: white; text-align: center;">MI CARRITO</h2>
 
-    </div>
-
-    
-
-       
-    
-       
-
-        <section class="container_main" style="padding-top: 20vh; display: flex; justify-content: center; margin-left: 20px;">
-            <div class="" style="background-color: #B10B0D; padding: 20px; height: 70vh; width: 100vh; position: relative;">
-
-                <h2 style="color: white; text-align: center;">MI CARRITO</h2>
-                
-                <table class="table table-striped">
-                    
-                  </table>
-                  <table class="table table-striped">
-                    <tbody>
+          <!-- Direccion de entrega editable -->
+          <form method="POST" action="{% url 'update_direccion' %}">
+              {% csrf_token %}
+              <table class="table table-striped">
+                  <tbody>
                       <tr>
-                        <div>
-                            <th scope="row" style="color: white;">
-                                DIRECCIÓN DE ENTREGA:
-                            </th>
-                            <th>
-                                <a href="" class=""> Modificar</a>
-                            </th>
-
-                        </div>
-                        
-                  </table>
-                  
-                  <table class="table table-striped">
-                    <tbody>
-                      <h6 style="color: white;">MÉTODOS DE PAGO:</h6>
-                      <tr>
-                        <td>
-                          <div class="form-check" style="display: flex; align-items: center;">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-                            <label class="form-check-label" for="exampleRadios2" style="color: white; margin-left: 10px;">
-                              Visa
-                            </label>
-                          </div>
-                          <div class="form-check" style="display: flex; align-items: center;">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-                            <label class="form-check-label" for="exampleRadios2" style="color: white; margin-left: 10px;">
-                              Añadir targeta
-                            </label>
-                          </div>
-                        </td>
+                          <th scope="row" style="color: white;">
+                              DIRECCIÓN DE ENTREGA:
+                          </th>
+                          <td>
+                              <input type="text" name="direccion_entrega" value="{{ direccion_entrega }}" class="form-control" />
+                          </td>
+                          <td>
+                              <button type="submit" class="btn btn-light btn-custom">Guardar</button>
+                          </td>
                       </tr>
-                    </tbody>
-                  </table>
+                  </tbody>
+              </table>
+          </form>
 
-                  <table class="table table-striped">
-                    <tbody>
-                      <h6 style="color: white;">RESUMEN:</h6>
+          <!-- Resumen -->
+          <h6 style="color: white;">Resumen:</h6>
+          <table class="table table-striped">
+              <thead>
+                  <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio</th>
+                      <th>Subtotal</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% if items %}
+                      {% for item in items %}
                       <tr>
-                        <td>
-                          <div class=style="align-items: center;">
-                            <label class="form-check-label" for="exampleRadios2" style="color: white; margin-left: 10px;">
-                              Subtotal:
-                            </label>
-                          </div>
-                          <div class=style="align-items: center;">
-                            <label class="form-check-label" for="exampleRadios2" style="color: white; margin-left: 10px;">
-                              Gastos de envió:
-                            </label>
-                          </div>
-                          <div class=style="align-items: center;">
-                            <label class="form-check-label" for="exampleRadios2" style="color: white; margin-left: 10px;">
-                              Total a pagar:
-                            </label>
-                          </div>
-                        </td>
+                          <td>{{ item.id_producto.nombre_producto }}</td>
+                          <td>{{ item.cantidad }}</td>
+                          <td>${{ item.precio }}</td>
+                          <td>${{ item.subtotal }}</td>
                       </tr>
-                    </tbody>
-                  </table>
-                  <div class="d-flex justify-content-center align-items-center">
-                    <button class="btn" style="background-color: white; color: black;">REALIZAR PEDIDO</button>
-                  </div>
-                  
-                 
-                  
-            </div>
-                
-               
-        </section>
-        
-        
+                      {% endfor %}
+                  {% else %}
+                      <tr>
+                          <td colspan="4" style="text-align: center; color: white;">No hay productos en tu carrito.</td>
+                      </tr>
+                  {% endif %}
+              </tbody>
+          </table>
+          <table class="table table-striped">
+              <tbody>
+                  <tr>
+                      <td style="color: white;">Total a pagar: ${{ subtotal }}</td>
+                  </tr>
+              </tbody>
+          </table>
 
-        <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 35px; bottom: 0; z-index: 1000;">
-            <p style="text-align: center; margin: 0; padding: 10px;">&copy; 2024. Todos los derechos reservados</p>
-        </footer>
-        
+          <!-- Botón de realizar pedido -->
+          <div class="d-flex justify-content-center">
+              <a href="{% url 'pedido_realizado' %}">
+                  <button class="btn btn-light btn-custom">REALIZAR PEDIDO</button>
+              </a>
+          </div>   
+      </div>     
+  </section>
 
+  <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 35px; bottom: 0;">
+      <p style="text-align: center; margin: 0; padding: 10px;">&copy; 2024. Todos los derechos reservados</p>
+  </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

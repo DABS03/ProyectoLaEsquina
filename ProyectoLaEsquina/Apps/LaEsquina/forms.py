@@ -64,7 +64,6 @@ class CrearCuentaForm(forms.ModelForm):
             self.add_error('confirmar_contrasena', 'Las contraseñas no coinciden.')
         return cleaned_data
 
-
 def agregar_producto(request):
     categorias = CategoriaProducto.objects.all()
     if request.method == 'POST':
@@ -118,3 +117,4 @@ class ProductoForm(forms.ModelForm):
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 4}),
         }
+        

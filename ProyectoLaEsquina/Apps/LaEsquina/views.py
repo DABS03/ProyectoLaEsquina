@@ -9,7 +9,6 @@ from urllib.parse import urlencode
 from allauth.socialaccount.models import SocialAccount
 
 
-
 def role_required(allowed_roles):
     def decorator(view_func):
         def wrapper(request, *args, **kwargs):
@@ -311,7 +310,7 @@ def agregar_al_carrito(request, producto_id):
             item_carrito.subtotal = item_carrito.cantidad * item_carrito.precio
             item_carrito.save()
 
-        messages.success(request, f'{producto.nombre_producto} agregado al carrito.')
+
         
         return redirect('cliente_view')
 
@@ -345,19 +344,66 @@ def eliminar_del_carrito(request):
         if items_a_eliminar:
             # Elimina los items del carrito
             ItemsCarrito.objects.filter(id_itemsCarrito__in=items_a_eliminar).delete()
-            messages.success(request, 'Productos eliminados del carrito.')
-        else:
-            messages.warning(request, 'No se seleccionó ningún producto para eliminar.')
+         
+       
 
     return redirect('mi_carrito')  # Redirige de nuevo a la vista del carrito
 
 # FIN Carrito
 
+# INICIO Pedidos 
 @role_required(allowed_roles=['Cliente'])
 def realizar_pedido(request):
+    user_id = request.session.get('user_id')
+    
+    if not user_id:
+        return redirect('login')
 
-    return render(request, 'view_realizarpedido.html')
+    # Obtener la dirección del usuario
+    usuario = get_object_or_404(Usuario, id_usuario=user_id)
+    direccion_entrega = usuario.direccion
 
+    # Calcular el subtotal del carrito del cliente
+    try:
+        carrito = Carrito.objects.get(id_usuario=user_id)
+        items = ItemsCarrito.objects.filter(id_carrito=carrito)
+        subtotal = sum(item.subtotal for item in items)
+    except Carrito.DoesNotExist:
+        items = []  # Asegúrate de inicializar `items` en caso de que no haya carrito
+        subtotal = 0
+
+    context = {
+        'direccion_entrega': direccion_entrega,
+        'subtotal': subtotal,
+        'items': items,  # Agregar los items al contexto
+    }
+
+    return render(request, 'view_realizarpedido.html', context)
+
+
+@role_required(allowed_roles=['Cliente'])
+def pedido_realizado(request):
+    return render(request, 'v_pedidorealizado.html')
+
+
+@role_required(allowed_roles=['Cliente'])
+def update_direccion(request):
+    if request.method == "POST":
+        user_id = request.session.get('user_id')
+        nueva_direccion = request.POST.get("direccion_entrega")
+        if user_id and nueva_direccion:
+            # Actualiza la dirección del usuario
+            usuario = get_object_or_404(Usuario, id_usuario=user_id)
+            usuario.direccion = nueva_direccion
+            usuario.save()
+            messages.success(request, "Dirección actualizada.")
+        else:
+            messages.error(request, "Error al actualizar la dirección.")
+
+        return redirect('realizar_pedido')  # Asegúrate de redirigir a la vista correcta
+
+
+# FIN Pedidos 
 
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):
@@ -406,7 +452,6 @@ def logout_view(request):
     auth_logout(request)
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('login')
-
 
 # Vista para eliminar el producto
 def eliminar_producto(request, producto_id):

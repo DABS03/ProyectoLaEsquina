@@ -39,7 +39,6 @@
         <h2 class="text-center">CREAR CUENTA</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            
             <div class="mb-3">
                 <label for="id_nombres">Nombres:</label>
                 {{ form.nombres|add_class:"form-control" }}
@@ -47,15 +46,13 @@
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
             </div>
-            
             <div class="mb-3">
                 <label for="id_usuario">Usuario:</label>
                 {{ form.usuario|add_class:"form-control" }}
                 {% for error in form.usuario.errors %}
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-            </div>
-            
+            </div> 
             <div class="mb-3">
                 <label for="id_contrasena">Contraseña:</label>
                 {{ form.contrasena|add_class:"form-control" }}
@@ -63,23 +60,20 @@
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
             </div>
-            
             <div class="mb-3">
                 <label for="id_confirmar_contrasena">Confirmar Contraseña:</label>
                 {{ form.confirmar_contrasena|add_class:"form-control" }}
                 {% for error in form.confirmar_contrasena.errors %}
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-            </div>
-            
+            </div>    
             <div class="mb-3">
                 <label for="id_correo">Correo:</label>
                 {{ form.correo|add_class:"form-control" }}
                 {% for error in form.correo.errors %}
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-            </div>
-            
+            </div> 
             <div class="mb-3">
                 <label for="id_telefono">Teléfono:</label>
                 {{ form.telefono|add_class:"form-control" }}
@@ -87,18 +81,15 @@
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
             </div>
-            
             <div class="mb-3">
                 <label for="id_direccion">Dirección:</label>
                 {{ form.direccion|add_class:"form-control" }}
                 {% for error in form.direccion.errors %}
                     <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
-            </div>
-            
+            </div>  
             <button type="submit" class="btn btn-custom">GUARDAR</button>
         </form>
     </div>
-    
 </body>
 </html>
