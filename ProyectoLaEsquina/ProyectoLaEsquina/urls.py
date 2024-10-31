@@ -18,6 +18,7 @@ urlpatterns = [
     path('agregar-pro/', views.agregar_pro, name='agregar_pro'),
     path('inventario/', views.ver_inventario, name='ver_inventario'),
     path('historial_pedidos/',views.historial_pedidos, name='historial_pedidos'),
+    path('cambiar_estado/<int:pedido_id>/', views.cambiar_estado, name='cambiar_estado'),
     path('historial_solicitudes/',views.historial_solicitudes, name='historial_solicitudes'),
 
     # Aseguradora

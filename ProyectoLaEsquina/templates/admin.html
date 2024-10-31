@@ -10,18 +10,23 @@
 </head>
 <style>
     a {
-      color: inherit; 
+        color: inherit; 
     }
-  
+
     a.custom-link {
-      color: white; 
+        color: white; 
     }
-  
- 
+
     a.custom-link:hover {
-      color: lightgray; 
+        color: lightgray; 
     }
-  </style>
+
+    /* Estilos para el scroll en los recuadros de pedidos y solicitudes */
+    .scrollable-table {
+        max-height: 400px; /* Define la altura máxima del contenedor */
+        overflow-y: auto;  /* Activa el scroll vertical */
+    }
+</style>
 <body>
     <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
         <div class="container">
@@ -46,17 +51,18 @@
         </div>
 
         <section class="d-flex justify-content-center flex-wrap">
+            <!-- Contenedor de Pedidos de Productos -->
             <div class="p-3 rounded-3 mx-2" style="background-color: #B10B0D; color: white; width: 45%;">
                 <a href="{% url 'historial_pedidos' %}">
                     <h2 class="text-center">PEDIDOS DE PRODUCTOS</h2>
                 </a>
-                <div class="bg-white p-3 rounded-3">
+                <div class="bg-white p-3 rounded-3 scrollable-table"> <!-- Añadido scrollable-table -->
                     <table class="table table-striped">
                         <thead class="bg-light">
                             <tr>
                                 <th scope="col">N° Pedido</th>
                                 <th scope="col">Nombre de cliente</th>
-                                <th scope="col">Detalles</th>
+                                <th scope="col">Comentario</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Subtotal</th>
                                 <th scope="col">Estado</th>
@@ -65,30 +71,32 @@
                         <tbody>
                             {% for pedido in pedidos_productos %}
                             <tr>
-                                <th scope="row">{{ pedido.id_pedido.id_pedido }}</th>
-                                <td>{{ pedido.id_pedido.id_usuario.nombres }}</td>
-                                <td><a class="detail" href="#">Ver más</a></td>
-                                <td>{{ pedido.id_pedido.fecha_pedido }}</td>
-                                <td>{{ pedido.subtotal }}</td>
-                                <td>{{ pedido.id_pedido.id_estado.nombre_estado }}</td>
+                                <th scope="row">{{ pedido.id_pedido }}</th>
+                                <td>{{ pedido.nombre_cliente }}</td>
+                                <td>{{ pedido.comentarios }}</td>
+                                <td>{{ pedido.fecha_pedido }}</td>
+                                <td>${{ pedido.subtotal }}</td>
+                                <td>{{ pedido.estado }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
+                        
                     </table>
                 </div>
             </div>
+
+            <!-- Contenedor de Solicitudes de Servicios -->
             <div class="p-3 rounded-3 mx-2" style="background-color: #B10B0D; color: white; width: 45%;">
                 <a href="{% url 'historial_solicitudes' %}">
                     <h2 class="text-center">SOLICITUDES DE SERVICIOS</h2>
                 </a>
-                <div class="bg-white p-3 rounded-3">
+                <div class="bg-white p-3 rounded-3 scrollable-table"> <!-- Añadido scrollable-table -->
                     <table class="table table-striped">
                         <thead class="bg-light">
                             <tr>
                                 <th scope="col">N° Pedido</th>
                                 <th scope="col">Nombre de cliente</th>
                                 <th scope="col">Servicio</th>
-                                <th scope="col">Detalles</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Subtotal</th>
                                 <th scope="col">Estado</th>
@@ -100,9 +108,8 @@
                                 <th scope="row">{{ pedido.id_pedido.id_pedido }}</th>
                                 <td>{{ pedido.id_pedido.id_usuario.nombres }}</td>
                                 <td>{{ pedido.id_servicio.nombre_servicio }}</td>
-                                <td><a class="detail" href="#">Ver más</a></td>
                                 <td>{{ pedido.id_pedido.fecha_pedido }}</td>
-                                <td>{{ pedido.precio }}</td>
+                                <td>${{ pedido.precio }}</td>
                                 <td>{{ pedido.id_pedido.id_estado.nombre_estado }}</td>
                             </tr>
                             {% endfor %}
@@ -116,5 +123,5 @@
         <p class="text-center mb-0 py-2">&copy; 2024. Todos los derechos reservados</p>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-  </body>
+</body>
 </html>

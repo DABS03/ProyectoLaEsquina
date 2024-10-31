@@ -108,11 +108,13 @@
           </table>
 
           <!-- Botón de realizar pedido -->
-          <div class="d-flex justify-content-center">
-              <a href="{% url 'pedido_realizado' %}">
-                  <button class="btn btn-light btn-custom">REALIZAR PEDIDO</button>
-              </a>
-          </div>   
+          <form method="POST" action="{% url 'pedido_realizado' %}">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-light btn-custom">REALIZAR PEDIDO</button>
+            </div>
+        </form>
+        
       </div>     
   </section>
 

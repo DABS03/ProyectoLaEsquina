@@ -6,8 +6,10 @@ from django.contrib.auth import logout as auth_logout
 import requests
 from django.shortcuts import redirect
 from urllib.parse import urlencode
-from allauth.socialaccount.models import SocialAccount
-
+from django.utils import timezone
+from django.db.models import Sum
+from django.shortcuts import redirect, get_object_or_404
+from .models import *
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -129,17 +131,39 @@ def logout_view(request):
 
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
-    pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario').all()
+    # Agrupamos los pedidos de productos por id_pedido y sumamos los subtotales
+    pedidos_productos = (
+        PedidoProducto.objects
+        .select_related('id_pedido__id_estado', 'id_pedido__id_usuario')
+        .values('id_pedido')
+        .annotate(total_subtotal=Sum('subtotal'))  # Suma los subtotales por pedido
+    )
+
+    # Recuperamos la información del pedido
+    pedidos = []
+    for pedido in pedidos_productos:
+        pedido_info = Pedido.objects.get(id_pedido=pedido['id_pedido'])
+        pedidos.append({
+            'id_pedido': pedido_info.id_pedido,
+            'nombre_cliente': pedido_info.id_usuario.nombres,
+            'comentarios': pedido_info.comentarios,
+            'fecha_pedido': pedido_info.fecha_pedido,
+            'subtotal': pedido['total_subtotal'],
+            'estado': pedido_info.id_estado.nombre_estado,
+        })
+
+    # Recuperamos los servicios
     pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
     
     usuarios = Usuario.objects.all()
     
     context = {
-        'pedidos_productos': pedidos_productos,
+        'pedidos_productos': pedidos,
         'pedidos_servicios': pedidos_servicios,
         'usuarios': usuarios,
     }
     return render(request, 'admin.html', context)
+
 
 @role_required(allowed_roles=['Admin'])
 def ver_inventario(request):
@@ -227,14 +251,42 @@ def agregar_pro(request):
 
 @role_required(allowed_roles=['Admin'])
 def historial_pedidos(request):
-    pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario').all()
-    usuarios = Usuario.objects.all()
-    
+    # Obtener todos los pedidos y sus productos
+    pedidos_productos = PedidoProducto.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_producto').all()
+
+    # Agrupar los pedidos por id_pedido y calcular el subtotal
+    historial = {}
+    for pedido_producto in pedidos_productos:
+        pedido_id = pedido_producto.id_pedido.id_pedido
+        if pedido_id not in historial:
+            historial[pedido_id] = {
+                'pedido': pedido_producto.id_pedido,
+                'productos': [],
+                'subtotal': 0  # Inicializa subtotal
+            }
+        historial[pedido_id]['productos'].append(pedido_producto)
+        historial[pedido_id]['subtotal'] += pedido_producto.subtotal  # Acumula el subtotal
+
     context = {
-        'pedidos_productos': pedidos_productos,
-        'usuarios': usuarios,
+        'historial': historial,
+        'estados': EstadoPedido.objects.all(),  # Asegúrate de incluir los estados aquí
     }
     return render(request, 'v_historialpedidos.html', context)
+
+
+@role_required(allowed_roles=['Admin'])
+def cambiar_estado(request, pedido_id):
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id_pedido=pedido_id)
+        nuevo_estado_id = request.POST.get('estado')
+        nuevo_estado = get_object_or_404(EstadoPedido, id_estado=nuevo_estado_id)
+        
+        pedido.id_estado = nuevo_estado
+        pedido.save()
+        
+        # Redirige de vuelta a la página de pedidos o donde necesites
+        return redirect('admin_view')  # Ajusta la redirección según sea necesario
+
 
 @role_required(allowed_roles=['Admin'])
 def historial_solicitudes(request):
@@ -383,7 +435,45 @@ def realizar_pedido(request):
 
 @role_required(allowed_roles=['Cliente'])
 def pedido_realizado(request):
-    return render(request, 'v_pedidorealizado.html')
+    if request.method == 'POST':
+        user_id = request.session.get('user_id')
+        usuario = Usuario.objects.get(id_usuario=user_id)
+        carrito = Carrito.objects.get(id_usuario=user_id)
+        items = ItemsCarrito.objects.filter(id_carrito=carrito)
+        
+        if items.exists():
+            # Crea el pedido
+            pedido = Pedido.objects.create(
+                fecha_pedido=timezone.now(),
+                fecha_entrega=timezone.now() + timezone.timedelta(days=7),  # Ejemplo de fecha de entrega en una semana
+                comentarios="Pedido realizado desde el carrito.",
+                total=sum(item.subtotal for item in items),
+                id_estado=EstadoPedido.objects.get(nombre_estado="Pendiente"),
+                id_usuario=usuario
+            )
+
+            # Asociar los productos del carrito al pedido y limpiar el carrito
+            for item in items:
+                subtotal = item.cantidad * item.precio  # Calcula el subtotal
+                PedidoProducto.objects.create(
+                    id_pedido=pedido,
+                    id_producto=item.id_producto,
+                    cantidad_producto=item.cantidad,
+                    precio=item.precio,
+                    subtotal=subtotal  # Asigna el subtotal calculado
+                )
+
+
+            items.delete()  # Limpia el carrito una vez que se ha creado el pedido
+            carrito.delete()  # Opcional: Elimina el carrito del usuario
+
+            messages.success(request, "¡Pedido realizado exitosamente!")
+        else:
+            messages.error(request, "No hay productos en el carrito para realizar un pedido.")
+        
+        return redirect('cliente_view')  # Redirige a la vista del cliente
+
+    return redirect('mi_carrito')  # Redirige al carrito si el método no es POST
 
 
 @role_required(allowed_roles=['Cliente'])
