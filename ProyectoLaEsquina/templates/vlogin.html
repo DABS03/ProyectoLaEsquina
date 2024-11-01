@@ -20,12 +20,12 @@
 </head>
 <nav class="navbar bg-light position-fixed w-100">
     <div class="container">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" href="{% url 'admin_view' %}">
         <img src="{% static 'img/icon_esquina.png' %}" alt="Icono de La Esquina" width="200" height="60">
       </a>
     </div>
 </nav>
-<body class="bg-light">
+<body class="bg-light" >
     <div class="alert-container">
         {% if messages %}
             {% for message in messages %}
@@ -61,7 +61,7 @@
         </div> 
     </div>
     
-    <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 10vh; bottom: 0; z-index: 1000;">
+    <footer class="footer position-fixed w-100" style="background-color: #B10B0D; color: white; height: 5vh; bottom: 0; z-index: 1000;">
         <p style="text-align: center; margin: 0; padding: 10px;">&copy; 2024. Todos los derechos reservados</p>
     </footer>
 

@@ -273,7 +273,7 @@ def historial_pedidos(request):
     }
     return render(request, 'v_historialpedidos.html', context)
 
-
+#Cambiar estado para historial de pedido
 @role_required(allowed_roles=['Admin'])
 def cambiar_estado(request, pedido_id):
     if request.method == 'POST':
@@ -285,20 +285,36 @@ def cambiar_estado(request, pedido_id):
         pedido.save()
         
         # Redirige de vuelta a la página de pedidos o donde necesites
-        return redirect('admin_view')  # Ajusta la redirección según sea necesario
+        return redirect('historial_pedidos')  
 
 
 @role_required(allowed_roles=['Admin'])
 def historial_solicitudes(request):
     pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
-    
     usuarios = Usuario.objects.all()
-    
+    estados = EstadoPedido.objects.all()  # Obtener todos los estados
+
     context = {
         'pedidos_servicios': pedidos_servicios,
         'usuarios': usuarios,
+        'estados': estados,  # Pasar los estados al contexto
     }
     return render(request, 'v_solicitudes.html', context)
+
+# Cambiar estado para las solicitudes
+@role_required(allowed_roles=['Admin'])
+def cambiar_estado_solicitud(request, pedido_id):
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id_pedido=pedido_id)
+        nuevo_estado_id = request.POST.get('estado')
+        nuevo_estado = get_object_or_404(EstadoPedido, id_estado=nuevo_estado_id)
+        
+        pedido.id_estado = nuevo_estado
+        pedido.save()
+        
+        # Redirige a la vista de solicitudes
+        return redirect('historial_solicitudes')
+
 
 # FIN ADMIN
 ################################
@@ -445,7 +461,7 @@ def pedido_realizado(request):
             # Crea el pedido
             pedido = Pedido.objects.create(
                 fecha_pedido=timezone.now(),
-                fecha_entrega=timezone.now() + timezone.timedelta(days=7),  # Ejemplo de fecha de entrega en una semana
+                fecha_entrega=timezone.now() + timezone.timedelta(days=7),
                 comentarios="Pedido realizado desde el carrito.",
                 total=sum(item.subtotal for item in items),
                 id_estado=EstadoPedido.objects.get(nombre_estado="Pendiente"),
@@ -454,26 +470,25 @@ def pedido_realizado(request):
 
             # Asociar los productos del carrito al pedido y limpiar el carrito
             for item in items:
-                subtotal = item.cantidad * item.precio  # Calcula el subtotal
+                subtotal = item.cantidad * item.precio
                 PedidoProducto.objects.create(
                     id_pedido=pedido,
                     id_producto=item.id_producto,
                     cantidad_producto=item.cantidad,
                     precio=item.precio,
-                    subtotal=subtotal  # Asigna el subtotal calculado
+                    subtotal=subtotal
                 )
 
-
             items.delete()  # Limpia el carrito una vez que se ha creado el pedido
-            carrito.delete()  # Opcional: Elimina el carrito del usuario
+            carrito.delete()
 
             messages.success(request, "¡Pedido realizado exitosamente!")
+            return redirect('pedido_exitoso',pedido_id = pedido.id_pedido)  # Redirige a la vista de éxito con el ID del pedido
         else:
             messages.error(request, "No hay productos en el carrito para realizar un pedido.")
         
-        return redirect('cliente_view')  # Redirige a la vista del cliente
+    return redirect('mi_carrito')
 
-    return redirect('mi_carrito')  # Redirige al carrito si el método no es POST
 
 
 @role_required(allowed_roles=['Cliente'])
@@ -491,6 +506,23 @@ def update_direccion(request):
             messages.error(request, "Error al actualizar la dirección.")
 
         return redirect('realizar_pedido')  # Asegúrate de redirigir a la vista correcta
+
+
+@role_required(allowed_roles=['Cliente'])
+def pedido_exitoso(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id_pedido=pedido_id)
+    items = PedidoProducto.objects.filter(id_pedido=pedido)
+
+    # Calcular el total sumando los subtotales de cada item
+    total_pagar = sum(item.cantidad_producto * item.precio for item in items)  # Verifica que esto sea correcto
+
+    context = {
+        'pedido': pedido,
+        'items': items,
+        'total_pagar': total_pagar,  # Agregar el total al contexto
+    }
+    return render(request, 'v_pedidorealizado.html', context)
+
 
 
 # FIN Pedidos 

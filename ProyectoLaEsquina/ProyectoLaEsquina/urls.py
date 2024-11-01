@@ -20,6 +20,7 @@ urlpatterns = [
     path('historial_pedidos/',views.historial_pedidos, name='historial_pedidos'),
     path('cambiar_estado/<int:pedido_id>/', views.cambiar_estado, name='cambiar_estado'),
     path('historial_solicitudes/',views.historial_solicitudes, name='historial_solicitudes'),
+    path('cambiar_estado_solicitud/<int:pedido_id>/', views.cambiar_estado_solicitud, name='cambiar_estado_solicitud'),
 
     # Aseguradora
     path('aseguradora_view/', views.aseguradora_view, name='aseguradora_view'),
@@ -42,5 +43,6 @@ urlpatterns = [
     path('realizar_pedido/', views.realizar_pedido, name='realizar_pedido'),
     path('pedido_realizado/', views.pedido_realizado, name='pedido_realizado'),
     path('update_direccion/', views.update_direccion, name='update_direccion'),
+    path('pedido_exitoso/<int:pedido_id>/', views.pedido_exitoso, name='pedido_exitoso'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

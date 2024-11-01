@@ -106,7 +106,13 @@
                             {% for pedido in pedidos_servicios %}
                             <tr>
                                 <th scope="row">{{ pedido.id_pedido.id_pedido }}</th>
-                                <td>{{ pedido.id_pedido.id_usuario.nombres }}</td>
+                                <td>
+                                    {% if pedido.id_pedido.id_usuario.nombres == "Aseguradora" %}
+                                        <strong>{{ pedido.id_pedido.id_usuario.nombres }}</strong>
+                                    {% else %}
+                                        {{ pedido.id_pedido.id_usuario.nombres }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ pedido.id_servicio.nombre_servicio }}</td>
                                 <td>{{ pedido.id_pedido.fecha_pedido }}</td>
                                 <td>${{ pedido.precio }}</td>
@@ -114,6 +120,7 @@
                             </tr>
                             {% endfor %}
                         </tbody>
+                        
                     </table>
                 </div>
             </div>
