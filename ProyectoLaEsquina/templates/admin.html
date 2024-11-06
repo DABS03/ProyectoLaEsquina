@@ -29,7 +29,7 @@
 <body>
     <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
         <div class="container">
-            <a class="icon_esquina" href="#">
+            <a class="icon_esquina">
                 <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
             </a>
             <ul class="nav justify-content-end">
@@ -80,6 +80,7 @@
                             <tr>
                                 <th scope="col">N° Pedido</th>
                                 <th scope="col">Nombre de cliente</th>
+                                <th scope="col">Dirección</th>
                                 <th scope="col">Comentario</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Subtotal</th>
@@ -91,6 +92,7 @@
                             <tr>
                                 <th scope="row">{{ pedido.id_pedido }}</th>
                                 <td>{{ pedido.nombre_cliente }}</td>
+                                <td>{{ pedido.direccion_cliente }}</td>
                                 <td>{{ pedido.comentarios }}</td>
                                 <td>{{ pedido.fecha_pedido }}</td>
                                 <td>${{ pedido.subtotal }}</td>
@@ -115,6 +117,7 @@
                                 <th scope="col">N° Pedido</th>
                                 <th scope="col">Nombre de cliente</th>
                                 <th scope="col">Servicio</th>
+                                <th scope="col">Dirección</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Subtotal</th>
                                 <th scope="col">Estado</th>
@@ -131,7 +134,10 @@
                                         {{ pedido.id_pedido.id_usuario.nombres }}
                                     {% endif %}
                                 </td>
-                                <td>{{ pedido.id_servicio.nombre_servicio }}</td>
+                                <td>{{ pedido.nombre_servicio }}</td>
+
+                                <td>{{ pedido.direccion_cliente }}</td>
+
                                 <td>{{ pedido.id_pedido.fecha_pedido }}</td>
                                 <td>${{ pedido.precio }}</td>
                                 <td>{{ pedido.id_pedido.id_estado.nombre_estado }}</td>

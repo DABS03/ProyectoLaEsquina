@@ -70,6 +70,7 @@
                         <tr>
                             <th scope="col">N° de pedido</th>
                             <th scope="col">Nombre de cliente</th>
+                            <th scope="col">Dirección</th>
                             <th scope="col">Comentario</th>
                             <th scope="col">Fecha de pedido</th>
                             <th scope="col">Subtotal</th>
@@ -81,6 +82,7 @@
                             <tr>
                                 <th scope="row">{{ detalle.pedido.id_pedido }}</th>
                                 <td>{{ detalle.pedido.id_usuario.nombres }}</td>
+                                <td>{{ detalle.direccion_cliente }}</td>
                                 <td>{{ detalle.pedido.comentarios }}</td>
                                 <td>{{ detalle.pedido.fecha_pedido }}</td>
                                 <td>{{ detalle.subtotal }}</td>

@@ -70,6 +70,7 @@
                             <th scope="col">N° Pedido</th>
                             <th scope="col">Nombre de cliente</th>
                             <th scope="col">Servicio</th>
+                            <th scope="col">Dirección</th>
                             <th scope="col">Fecha</th>
                             <th scope="col">Subtotal</th>
                             <th scope="col">Estado</th>
@@ -78,23 +79,24 @@
                     <tbody>
                         {% for pedido in pedidos_servicios %}
                         <tr>
-                            <th scope="row">{{ pedido.id_pedido.id_pedido }}</th>
+                            <th scope="row">{{ pedido.id_pedido }}</th>
                             <td>
-                                {% if pedido.id_pedido.id_usuario.nombres == "Aseguradora" %}
-                                    <strong>{{ pedido.id_pedido.id_usuario.nombres }}</strong>
+                                {% if pedido.nombre_cliente == "Aseguradora" %}
+                                    <strong>{{ pedido.nombre_cliente }}</strong>
                                 {% else %}
-                                    {{ pedido.id_pedido.id_usuario.nombres }}
+                                    {{ pedido.nombre_cliente }}
                                 {% endif %}
                             </td>
-                            <td>{{ pedido.id_servicio.nombre_servicio }}</td>
-                            <td>{{ pedido.id_pedido.fecha_pedido }}</td>
-                            <td>{{ pedido.precio }}</td>
+                            <td>{{ pedido.servicio }}</td>
+                            <td>{{ pedido.direccion_cliente }}</td>
+                            <td>{{ pedido.fecha_pedido }}</td>
+                            <td>{{ pedido.subtotal }}</td>
                             <td>
-                                <form action="{% url 'cambiar_estado_solicitud' pedido.id_pedido.id_pedido %}" method="post">
+                                <form action="{% url 'cambiar_estado_solicitud' pedido.id_pedido %}" method="post">
                                     {% csrf_token %}
                                     <select name="estado" class="form-select" onchange="this.form.submit()">
                                         {% for estado in estados %}
-                                            <option value="{{ estado.id_estado }}" {% if estado.id_estado == pedido.id_pedido.id_estado.id_estado %}selected{% endif %}>
+                                            <option value="{{ estado.id_estado }}" {% if estado.id_estado == pedido.estado_id %}selected{% endif %}>
                                                 {{ estado.nombre_estado }}
                                             </option>
                                         {% endfor %}
@@ -104,6 +106,7 @@
                         </tr>
                         {% endfor %}
                     </tbody>
+                    
                   </table>
                 </div>
             </div>

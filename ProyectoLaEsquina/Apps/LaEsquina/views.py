@@ -131,7 +131,7 @@ def logout_view(request):
 
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
-    # Obtener los pedidos de productos y servicios como antes
+    # Obtener los pedidos de productos y servicios
     pedidos_productos = (
         PedidoProducto.objects
         .select_related('id_pedido__id_estado', 'id_pedido__id_usuario')
@@ -145,24 +145,41 @@ def admin_view(request):
         pedidos.append({
             'id_pedido': pedido_info.id_pedido,
             'nombre_cliente': pedido_info.id_usuario.nombres,
+            'direccion_cliente': pedido_info.id_usuario.direccion,
             'comentarios': pedido_info.comentarios,
             'fecha_pedido': pedido_info.fecha_pedido,
             'subtotal': pedido['total_subtotal'],
             'estado': pedido_info.id_estado.nombre_estado,
         })
 
-    pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
+    # Obtener las solicitudes de servicio y añadir la dirección del cliente
+    # Obtener las solicitudes de servicio y añadir la dirección del cliente
+    pedidos_servicios = []
+    for servicio in PedidoServicio.objects.select_related(
+        'id_pedido__id_estado', 
+        'id_pedido__id_usuario', 
+        'id_servicio'
+    ).all():
+        pedidos_servicios.append({
+            'id_pedido': servicio.id_pedido,
+            'nombre_cliente': servicio.id_pedido.id_usuario.nombres,
+            'direccion_cliente': servicio.id_pedido.id_usuario.direccion,
+            'nombre_servicio': servicio.id_servicio.nombre_servicio,  # Cambiado de 'id_servicio' a 'nombre_servicio'
+            'fecha_pedido': servicio.id_pedido.fecha_pedido,
+            'precio': servicio.precio,
+            'estado': servicio.id_pedido.id_estado.nombre_estado,
+        })
 
-    # Obtener las sugerencias de los clientes
+
     sugerencias = Sugerencia.objects.select_related('id_usuario').all()
 
-    # Contexto para la plantilla
     context = {
         'pedidos_productos': pedidos,
         'pedidos_servicios': pedidos_servicios,
         'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
     return render(request, 'admin.html', context)
+
 
 
 @role_required(allowed_roles=['Admin'])
@@ -273,12 +290,13 @@ def historial_pedidos(request):
             historial[pedido_id] = {
                 'pedido': pedido_producto.id_pedido,
                 'productos': [],
-                'subtotal': 0  # Inicializa subtotal
+                'direccion_cliente': pedido_producto.id_pedido.id_usuario.direccion,  # Nueva columna
+                'subtotal': 0
             }
         historial[pedido_id]['productos'].append(pedido_producto)
-        historial[pedido_id]['subtotal'] += pedido_producto.subtotal  # Acumula el subtotal
+        historial[pedido_id]['subtotal'] += pedido_producto.subtotal
 
-        sugerencias = Sugerencia.objects.select_related('id_usuario').all()
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
 
     context = {
         'historial': historial,
@@ -286,6 +304,40 @@ def historial_pedidos(request):
         'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
     return render(request, 'v_historialpedidos.html', context)
+
+
+@role_required(allowed_roles=['Admin'])
+def historial_solicitudes(request):
+    # Obtener los pedidos de servicio con sus relaciones
+    pedidos_servicios = PedidoServicio.objects.select_related(
+        'id_pedido__id_estado', 
+        'id_pedido__id_usuario', 
+        'id_servicio'
+    ).all()
+
+    estados = EstadoPedido.objects.all()  # Lista de estados disponibles
+
+    context = {
+        'pedidos_servicios': [
+            {
+                'id_pedido': pedido_servicio.id_pedido.id_pedido,
+                'nombre_cliente': pedido_servicio.id_pedido.id_usuario.nombres,
+                'direccion_cliente': pedido_servicio.id_pedido.id_usuario.direccion,
+                'fecha_pedido': pedido_servicio.id_pedido.fecha_pedido,
+                'servicio': pedido_servicio.id_servicio.nombre_servicio,
+                'estado': pedido_servicio.id_pedido.id_estado.nombre_estado,
+                'estado_id': pedido_servicio.id_pedido.id_estado.id_estado,  # ID del estado actual
+                'subtotal': pedido_servicio.precio,
+            }
+            for pedido_servicio in pedidos_servicios
+        ],
+        'estados': estados,  # Lista de todos los estados para el select en el template
+    }
+
+    return render(request, 'v_solicitudes.html', context)
+
+
+
 
 #Cambiar estado para historial de pedido
 @role_required(allowed_roles=['Admin'])
@@ -300,21 +352,6 @@ def cambiar_estado(request, pedido_id):
         
         # Redirige de vuelta a la página de pedidos o donde necesites
         return redirect('historial_pedidos')  
-
-
-@role_required(allowed_roles=['Admin'])
-def historial_solicitudes(request):
-    pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
-    usuarios = Usuario.objects.all()
-    estados = EstadoPedido.objects.all()  # Obtener todos los estados
-    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
-    context = {
-        'pedidos_servicios': pedidos_servicios,
-        'usuarios': usuarios,
-        'estados': estados,  # Pasar los estados al contexto
-        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
-    }
-    return render(request, 'v_solicitudes.html', context)
 
 # Cambiar estado para las solicitudes
 @role_required(allowed_roles=['Admin'])
