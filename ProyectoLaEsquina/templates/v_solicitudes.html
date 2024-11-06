@@ -10,21 +10,40 @@
   <body style="padding-bottom: 70px;">
     <div class="container_main w-100"></div>
     <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
-      <div class="container">
-          <a class="icon_esquina" href="{% url 'admin_view' %}">
-              <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
-          </a>
-          <ul class="nav justify-content-end">
-              <li class="nav-item dropdown">
-                  <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <img src="{% static 'img/circle_accou.png' %}" alt="" width="50" height="50">
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                      <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
-                  </ul>
-              </li>
-          </ul>
-      </div>
+        <div class="container">
+            <a class="icon_esquina" href="{% url 'admin_view' %}">
+                <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
+            </a>
+            <ul class="nav justify-content-end">
+                <!-- Icono de notificaciones -->
+                <li class="nav-item dropdown">
+                    <a class="icon_noti dropdown-toggle" href="#" id="notiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{% static 'img/icon_noti.png' %}" alt="" width="50" height="50">
+                    </a>
+                    <!-- Menú desplegable de notificaciones -->
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notiDropdown">
+                        <li><strong>Sugerencias de los usuarios:</strong></li>
+                        {% for sugerencia in sugerencias %}
+                            <li class="dropdown-item">
+                                <strong>{{ sugerencia.nombre_cliente }}:</strong> {{ sugerencia.mensaje }}
+                            </li>
+                        {% empty %}
+                            <li class="dropdown-item">No hay sugerencias disponibles.</li>
+                        {% endfor %}
+
+                    </ul>
+                </li>
+                <!-- Icono de cuenta -->
+                <li class="nav-item dropdown">
+                    <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{% static 'img/circle_accou.png' %}" alt="" width="50" height="50">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </nav>
     </div>
     <div class="d-flex flex-column align-items-center justify-content-center" style="padding-top: 15vh; width: 100%; padding-left: 5vh; padding-right: 5vh;"" >

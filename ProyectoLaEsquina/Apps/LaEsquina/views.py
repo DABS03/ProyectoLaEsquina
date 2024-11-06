@@ -131,15 +131,14 @@ def logout_view(request):
 
 @role_required(allowed_roles=['Admin'])
 def admin_view(request):
-    # Agrupamos los pedidos de productos por id_pedido y sumamos los subtotales
+    # Obtener los pedidos de productos y servicios como antes
     pedidos_productos = (
         PedidoProducto.objects
         .select_related('id_pedido__id_estado', 'id_pedido__id_usuario')
         .values('id_pedido')
-        .annotate(total_subtotal=Sum('subtotal'))  # Suma los subtotales por pedido
+        .annotate(total_subtotal=Sum('subtotal'))
     )
 
-    # Recuperamos la información del pedido
     pedidos = []
     for pedido in pedidos_productos:
         pedido_info = Pedido.objects.get(id_pedido=pedido['id_pedido'])
@@ -152,28 +151,33 @@ def admin_view(request):
             'estado': pedido_info.id_estado.nombre_estado,
         })
 
-    # Recuperamos los servicios
     pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
-    
-    usuarios = Usuario.objects.all()
-    
+
+    # Obtener las sugerencias de los clientes
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
+
+    # Contexto para la plantilla
     context = {
         'pedidos_productos': pedidos,
         'pedidos_servicios': pedidos_servicios,
-        'usuarios': usuarios,
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
     return render(request, 'admin.html', context)
 
 
 @role_required(allowed_roles=['Admin'])
 def ver_inventario(request):
-    productos = Producto.objects.all()  
-    return render(request, 'ver_inventario.html', {'productos': productos})
+    productos = Producto.objects.all()
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
+    return render(request, 'ver_inventario.html', {
+        'productos': productos, 
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias]
+    })
 
 @role_required(allowed_roles=['Admin'])
 def edit_pro(request, producto_id):
     producto = get_object_or_404(Producto, id_producto=producto_id)
-
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
     if request.method == 'POST':
         # Procesar los datos del formulario
         nombre = request.POST.get('nombre')
@@ -197,12 +201,17 @@ def edit_pro(request, producto_id):
         producto.save()  # Guardar los cambios en la base de datos
         return redirect('ver_inventario')  # Cambia esto por el nombre de la vista deseada
 
-    return render(request, 'edit_pro.html', {'producto': producto, 'categorias': CategoriaProducto.objects.all()})
+    return render(request, 'edit_pro.html', {
+        'producto': producto, 
+        'categorias': CategoriaProducto.objects.all(), 
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias]
+    })
 
 
 @role_required(allowed_roles=['Admin'])
 def agregar_pro(request):
     categorias = CategoriaProducto.objects.all()  
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         precio = request.POST.get('precio')
@@ -247,7 +256,9 @@ def agregar_pro(request):
         except Exception as e:
             messages.error(request, f'Ocurrió un error inesperado: {str(e)}')
 
-    return render(request, 'agregar_pro.html', {'categorias': categorias})
+    return render(request, 'agregar_pro.html', {
+        'categorias': categorias,
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias]})
 
 @role_required(allowed_roles=['Admin'])
 def historial_pedidos(request):
@@ -267,9 +278,12 @@ def historial_pedidos(request):
         historial[pedido_id]['productos'].append(pedido_producto)
         historial[pedido_id]['subtotal'] += pedido_producto.subtotal  # Acumula el subtotal
 
+        sugerencias = Sugerencia.objects.select_related('id_usuario').all()
+
     context = {
         'historial': historial,
         'estados': EstadoPedido.objects.all(),  # Asegúrate de incluir los estados aquí
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
     return render(request, 'v_historialpedidos.html', context)
 
@@ -293,11 +307,12 @@ def historial_solicitudes(request):
     pedidos_servicios = PedidoServicio.objects.select_related('id_pedido__id_estado', 'id_pedido__id_usuario', 'id_servicio').all()
     usuarios = Usuario.objects.all()
     estados = EstadoPedido.objects.all()  # Obtener todos los estados
-
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
     context = {
         'pedidos_servicios': pedidos_servicios,
         'usuarios': usuarios,
         'estados': estados,  # Pasar los estados al contexto
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
     return render(request, 'v_solicitudes.html', context)
 
@@ -523,6 +538,21 @@ def pedido_exitoso(request, pedido_id):
     }
     return render(request, 'v_pedidorealizado.html', context)
 
+@role_required(allowed_roles=['Cliente'])
+def enviar_comentario(request, pedido_id):
+    if request.method == 'POST':
+        comentario = request.POST.get('comentario')
+        pedido = get_object_or_404(Pedido, id_pedido=pedido_id)
+
+        # Actualizar el comentario del pedido
+        if comentario:
+            pedido.comentarios = comentario
+            pedido.save()
+            messages.success(request, "Comentario enviado exitosamente.")
+        else:
+            messages.warning(request, "El comentario no puede estar vacío.")
+
+    return redirect('pedido_exitoso', pedido_id=pedido_id)
 
 
 # FIN Pedidos 
@@ -557,17 +587,29 @@ def crear_cuenta(request):
     return render(request, 'crear_cuenta.html', {'form': form})
 
 def cliente_view(request):
-
     productos = Producto.objects.all()
     servicios = Servicio.objects.all()
-
     context = {
         'productos': productos,
         'servicios': servicios,
     }
     return render(request, 'cliente.html', context)
 
-from django.contrib.auth import logout
+def enviar_sugerencia(request):
+    if request.method == 'POST':
+        mensaje = request.POST.get('mensaje')
+        if request.session.get('user_role') == 'Cliente' and mensaje:
+            sugerencia = Sugerencia(
+                id_usuario_id=request.session['user_id'],
+                mensaje=mensaje,
+                fecha_envio=timezone.now()
+            )
+            sugerencia.save()
+            messages.success(request, 'Sugerencia enviada con éxito')
+        else:
+            messages.error(request, 'No tienes permisos para enviar sugerencias')
+    return redirect('cliente_view')
+
 
 def logout_view(request):
     # Cerrar sesión en Django y también en Google

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
-#Base de datos LaEsquina
+# Base de datos LaEsquina
 
 class Rol(models.Model):
     id_rol = models.AutoField(primary_key=True)
@@ -125,3 +125,13 @@ class ItemsCarrito(models.Model):
 
     def __str__(self):
         return f"Carrito {self.id_carrito.id_carrito} - Producto {self.id_producto.nombre_producto}"
+
+class Sugerencia(models.Model):
+    id_sugerencia = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'id_rol': 2})  # Solo clientes pueden enviar sugerencias
+    mensaje = models.TextField()
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+    leido = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Sugerencia de {self.id_usuario.usuario} - {self.fecha_envio.strftime('%Y-%m-%d %H:%M:%S')}"
