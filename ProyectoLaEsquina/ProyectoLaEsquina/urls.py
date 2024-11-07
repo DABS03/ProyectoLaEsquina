@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Aseguradora
     path('aseguradora_view/', views.aseguradora_view, name='aseguradora_view'),
+    path('crear_pedido_servicio/', views.crear_pedido_servicio, name='crear_pedido_servicio'),
 
     #Google
     path('auth/', include('allauth.urls')),

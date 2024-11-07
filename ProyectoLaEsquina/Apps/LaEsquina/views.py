@@ -152,8 +152,8 @@ def admin_view(request):
             'estado': pedido_info.id_estado.nombre_estado,
         })
 
-    # Obtener las solicitudes de servicio y añadir la dirección del cliente
-    # Obtener las solicitudes de servicio y añadir la dirección del cliente
+
+    # Obtener las solicitudes de servicio
     pedidos_servicios = []
     for servicio in PedidoServicio.objects.select_related(
         'id_pedido__id_estado', 
@@ -163,9 +163,10 @@ def admin_view(request):
         pedidos_servicios.append({
             'id_pedido': servicio.id_pedido,
             'nombre_cliente': servicio.id_pedido.id_usuario.nombres,
-            'direccion_cliente': servicio.id_pedido.id_usuario.direccion,
+            'direccion_servicio': servicio.direccion_servicio,
             'nombre_servicio': servicio.id_servicio.nombre_servicio,  # Cambiado de 'id_servicio' a 'nombre_servicio'
             'fecha_pedido': servicio.id_pedido.fecha_pedido,
+            'hora_servicio': servicio.hora_servicio,
             'precio': servicio.precio,
             'estado': servicio.id_pedido.id_estado.nombre_estado,
         })
@@ -308,6 +309,7 @@ def historial_pedidos(request):
 
 @role_required(allowed_roles=['Admin'])
 def historial_solicitudes(request):
+    sugerencias = Sugerencia.objects.select_related('id_usuario').all()
     # Obtener los pedidos de servicio con sus relaciones
     pedidos_servicios = PedidoServicio.objects.select_related(
         'id_pedido__id_estado', 
@@ -322,16 +324,18 @@ def historial_solicitudes(request):
             {
                 'id_pedido': pedido_servicio.id_pedido.id_pedido,
                 'nombre_cliente': pedido_servicio.id_pedido.id_usuario.nombres,
-                'direccion_cliente': pedido_servicio.id_pedido.id_usuario.direccion,
+                'direccion_servicio': pedido_servicio.direccion_servicio,
                 'fecha_pedido': pedido_servicio.id_pedido.fecha_pedido,
                 'servicio': pedido_servicio.id_servicio.nombre_servicio,
                 'estado': pedido_servicio.id_pedido.id_estado.nombre_estado,
+                'hora_servicio': pedido_servicio.hora_servicio,
                 'estado_id': pedido_servicio.id_pedido.id_estado.id_estado,  # ID del estado actual
                 'subtotal': pedido_servicio.precio,
             }
             for pedido_servicio in pedidos_servicios
         ],
         'estados': estados,  # Lista de todos los estados para el select en el template
+        'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias],
     }
 
     return render(request, 'v_solicitudes.html', context)
@@ -397,7 +401,6 @@ def producto_view(request, producto_id):
 
 # INICIO Carrito
 
-
 @role_required(allowed_roles=['Cliente'])
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
@@ -409,6 +412,11 @@ def agregar_al_carrito(request, producto_id):
             return redirect('login')
 
         producto = get_object_or_404(Producto, id_producto=producto_id)
+
+        # Verificar si la cantidad solicitada excede el stock
+        if cantidad > producto.cantidad_stock:
+            cantidad = producto.cantidad_stock  # Limitar la cantidad a la disponible en stock
+            messages.warning(request, f"Solo hay {producto.cantidad_stock} unidades disponibles del producto. Se añadirá esta cantidad.")
 
         # Obtener o crear el carrito del usuario
         carrito, created = Carrito.objects.get_or_create(id_usuario_id=user_id)
@@ -424,17 +432,21 @@ def agregar_al_carrito(request, producto_id):
             }
         )
 
-        # Si ya existía, solo actualiza la cantidad y el subtotal
+        # Si el producto ya estaba en el carrito, solo actualizamos la cantidad y el subtotal
         if not item_created:
+            # Verificar si la cantidad total excede el stock disponible
+            if item_carrito.cantidad + cantidad > producto.cantidad_stock:
+                cantidad = producto.cantidad_stock - item_carrito.cantidad  # Ajustar cantidad al stock disponible
+                messages.warning(request, f"Solo hay {producto.cantidad_stock - item_carrito.cantidad} unidades restantes. Se ajustará la cantidad.")
+            
             item_carrito.cantidad += cantidad
             item_carrito.subtotal = item_carrito.cantidad * item_carrito.precio
             item_carrito.save()
 
+        return redirect('cliente_view')  # Redirigir a la vista del cliente
 
-        
-        return redirect('cliente_view')
+    return redirect('cliente_view')  # Redirigir si no es una solicitud POST
 
-    return redirect('cliente_view')
 
 @role_required(allowed_roles=['Cliente'])
 def mi_carrito_view(request):
@@ -520,9 +532,12 @@ def pedido_realizado(request):
                 id_usuario=usuario
             )
 
-            # Asociar los productos del carrito al pedido y limpiar el carrito
+            # Asociar los productos del carrito al pedido y actualizar el stock
             for item in items:
+                # Calcular el subtotal para el pedido
                 subtotal = item.cantidad * item.precio
+                
+                # Crear la relación entre el pedido y el producto
                 PedidoProducto.objects.create(
                     id_pedido=pedido,
                     id_producto=item.id_producto,
@@ -531,16 +546,21 @@ def pedido_realizado(request):
                     subtotal=subtotal
                 )
 
-            items.delete()  # Limpia el carrito una vez que se ha creado el pedido
+                # Actualizar el stock del producto
+                producto = item.id_producto
+                producto.cantidad_stock -= item.cantidad  # Restar la cantidad vendida
+                producto.save()
+
+            # Limpiar el carrito y eliminar el carrito de la base de datos
+            items.delete()  # Eliminar los items del carrito
             carrito.delete()
 
             messages.success(request, "¡Pedido realizado exitosamente!")
-            return redirect('pedido_exitoso',pedido_id = pedido.id_pedido)  # Redirige a la vista de éxito con el ID del pedido
+            return redirect('pedido_exitoso', pedido_id=pedido.id_pedido)  # Redirige a la vista de éxito con el ID del pedido
         else:
             messages.error(request, "No hay productos en el carrito para realizar un pedido.")
         
     return redirect('mi_carrito')
-
 
 
 @role_required(allowed_roles=['Cliente'])
@@ -594,17 +614,92 @@ def enviar_comentario(request, pedido_id):
 
 # FIN Pedidos 
 
+
+# INICIO Aseguradora
 @role_required(allowed_roles=['Aseguradora'])
 def aseguradora_view(request):
     user_id = request.session.get('user_id')
     
+    if request.method == 'POST':
+        # Obtener datos del formulario
+        fecha_entrega = request.POST.get('fecha_entrega')
+        hora_servicio = request.POST.get('hora_servicio')
+        direccion_servicio = request.POST.get('direccion_servicio')
+        servicio_id = request.POST.get('servicio')
+        
+        # Crear un nuevo pedido
+        pedido = Pedido.objects.create(
+            fecha_pedido=timezone.now().date(),
+            fecha_entrega=fecha_entrega,
+            comentarios="",
+            total=0,  # Actualizar con el valor real si es necesario
+            id_estado=EstadoPedido.objects.get(id_estado=4),  # Estado "pendiente"
+            id_usuario=Usuario.objects.get(id_usuario=user_id)
+        )
+        
+        # Crear PedidoServicio
+        servicio = Servicio.objects.get(id_servicio=servicio_id)
+        PedidoServicio.objects.create(
+            id_pedido=pedido,
+            id_servicio=servicio,
+            precio=servicio.precio,
+            direccion_servicio=direccion_servicio,
+            hora_servicio=hora_servicio
+        )
+        
+        return redirect('aseguradora')  # Redirige a la misma vista para mostrar los pedidos actualizados
+
+    # Obtener servicios y pedidos para mostrar en la vista
     servicios = PedidoServicio.objects.filter(id_pedido__id_usuario=user_id)
-    
+    servicios_disponibles = Servicio.objects.all()  # Servicios para el combobox
+
     context = {
-        'servicios': servicios,
+    'servicios': servicios,
+    'servicios_disponibles': servicios_disponibles,
     }
     
     return render(request, 'aseguradora.html', context)
+
+
+@role_required(allowed_roles=['Aseguradora'])
+def crear_pedido_servicio(request):
+    if request.method == 'POST':
+        user_id = request.session.get('user_id')
+        usuario = Usuario.objects.get(id_usuario=user_id)
+
+        # Obtener los datos del formulario
+        direccion_servicio = request.POST.get('direccion_servicio')
+        fecha_entrega = request.POST.get('fecha_entrega')
+        hora_servicio = request.POST.get('hora_servicio')
+        servicio_id = request.POST.get('servicio')
+
+        # Crear un nuevo pedido con estado pendiente
+        estado_pendiente = EstadoPedido.objects.get(nombre_estado="Pendiente")  # ID 4
+        pedido = Pedido.objects.create(
+            fecha_pedido=timezone.now(),
+            fecha_entrega=fecha_entrega,
+            comentarios="",
+            total=0,  # Calcula el total según el precio del servicio
+            id_estado=estado_pendiente,
+            id_usuario=usuario,
+        )
+
+        # Crear el PedidoServicio
+        servicio = Servicio.objects.get(id_servicio=servicio_id)
+        PedidoServicio.objects.create(
+            id_pedido=pedido,
+            id_servicio=servicio,
+            precio=servicio.precio,
+            direccion_servicio=direccion_servicio,
+            hora_servicio=hora_servicio,
+        )
+
+        return redirect('aseguradora_view')
+
+    servicios = Servicio.objects.all()
+    return render(request, 'crear_pedido_servicio.html', {'servicios': servicios})
+
+# FIN Aseguradora
 
 def crear_cuenta(request):
     if request.method == 'POST':
@@ -622,6 +717,8 @@ def crear_cuenta(request):
         form = CrearCuentaForm()
 
     return render(request, 'crear_cuenta.html', {'form': form})
+
+
 
 def cliente_view(request):
     productos = Producto.objects.all()

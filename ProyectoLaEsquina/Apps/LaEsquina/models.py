@@ -56,9 +56,12 @@ class PedidoServicio(models.Model):
     id_pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     id_servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
+    direccion_servicio = models.CharField(max_length=255, default="Sin dirección")  # Valor por defecto
+    hora_servicio = models.TimeField(default="00:00:00")  # Valor por defecto
 
     def __str__(self):
         return f"Pedido {self.id_pedido.id_pedido} - Servicio {self.id_servicio.nombre_servicio}"
+
 
 class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)

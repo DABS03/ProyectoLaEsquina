@@ -72,6 +72,7 @@
                             <th scope="col">Servicio</th>
                             <th scope="col">Dirección</th>
                             <th scope="col">Fecha</th>
+                            <th scope="col">Hora</th>
                             <th scope="col">Subtotal</th>
                             <th scope="col">Estado</th>
                         </tr>
@@ -88,8 +89,9 @@
                                 {% endif %}
                             </td>
                             <td>{{ pedido.servicio }}</td>
-                            <td>{{ pedido.direccion_cliente }}</td>
+                            <td>{{ pedido.direccion_servicio }}</td>
                             <td>{{ pedido.fecha_pedido }}</td>
+                            <td>{{ pedido.hora_servicio }}</td>
                             <td>{{ pedido.subtotal }}</td>
                             <td>
                                 <form action="{% url 'cambiar_estado_solicitud' pedido.id_pedido %}" method="post">

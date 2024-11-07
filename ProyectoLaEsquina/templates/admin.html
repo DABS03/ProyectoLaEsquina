@@ -29,7 +29,7 @@
 <body>
     <nav class="navbar position-fixed w-100" style="background-color:#B10B0D; height: 10vh; z-index: 1000;">
         <div class="container">
-            <a class="icon_esquina">
+            <a class="icon_esquina" href="{% url 'admin_view' %}">
                 <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="" width="200" height="60">
             </a>
             <ul class="nav justify-content-end">
@@ -119,6 +119,7 @@
                                 <th scope="col">Servicio</th>
                                 <th scope="col">Dirección</th>
                                 <th scope="col">Fecha</th>
+                                <th scope="col">Hora</th>
                                 <th scope="col">Subtotal</th>
                                 <th scope="col">Estado</th>
                             </tr>
@@ -136,9 +137,10 @@
                                 </td>
                                 <td>{{ pedido.nombre_servicio }}</td>
 
-                                <td>{{ pedido.direccion_cliente }}</td>
+                                <td>{{ pedido.direccion_servicio }}</td>
 
                                 <td>{{ pedido.id_pedido.fecha_pedido }}</td>
+                                <td>{{ pedido.hora_servicio }}</td>
                                 <td>${{ pedido.precio }}</td>
                                 <td>{{ pedido.id_pedido.id_estado.nombre_estado }}</td>
                             </tr>
