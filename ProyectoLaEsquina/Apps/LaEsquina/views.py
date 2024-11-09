@@ -8,6 +8,8 @@ from urllib.parse import urlencode
 from django.utils import timezone
 from django.db.models import Sum
 from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -184,11 +186,95 @@ def admin_view(request):
 @role_required(allowed_roles=['Admin'])
 def ver_inventario(request):
     productos = Producto.objects.all()
+    proveedores = Proveedor.objects.all()
     sugerencias = Sugerencia.objects.select_related('id_usuario').all()
     return render(request, 'ver_inventario.html', {
         'productos': productos, 
+        'proveedores': proveedores,
         'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias]
     })
+
+
+##################################
+# Stock ##################################
+##################################
+
+@role_required(allowed_roles=['Admin'])
+def solicitar_stock(request):
+    if request.method == 'POST':
+        producto_id = request.POST.get('id_producto')
+        producto = Producto.objects.get(id_producto=producto_id)
+        mensaje = request.POST.get('mensaje')
+        asunto = request.POST.get('asunto')
+        destinatario_email = request.POST.get('destinatario')  # Obtener el correo del proveedor seleccionado
+        
+        # Imprimir los datos en consola
+        print(f'Producto ID: {producto_id}')
+        print(f'Mensaje: {mensaje}')
+        print(f'Asunto: {asunto}')
+        print(f'Destinatario Email: {destinatario_email}')
+
+        try:
+            # Obtener el producto
+            producto = Producto.objects.get(id_producto=producto_id)
+            print(f'Producto encontrado: {producto.nombre_producto}')  # Imprimir el nombre del producto
+        except Producto.DoesNotExist:
+            messages.error(request, 'Producto no encontrado.')
+            print(f'Producto no encontrado.')  # Imprimir el nombre del prod
+            return redirect('ver_inventario')
+    
+        try:
+            # Obtener el proveedor seleccionado a partir del correo
+            proveedor = Proveedor.objects.get(correo=destinatario_email)
+            print(f'Proveedor encontrado: {proveedor.nombre_proveedor}')  # Imprimir el nombre del proveedor
+            messages.success(request, f"Correo del destinatario: {destinatario_email}")
+        except ObjectDoesNotExist:
+            messages.error(request, 'Proveedor no encontrado.')
+            print(f'No se encontro Proveedor ')  
+            return redirect('ver_inventario')
+        
+        # Obtener el usuario logueado
+        try:
+            usuario = Usuario.objects.get(id_usuario=request.session['user_id'])
+            remitente = usuario.correo
+            print(f'Usuario logueado: {usuario.nombres}')  # Imprimir el nombre del usuario logueado
+        except ObjectDoesNotExist:
+            messages.error(request, 'Usuario no encontrado.')
+            print(f'Usuario no logeado ')  
+            return redirect('login')  # Redirigir al login si no se encuentra el usuario
+        
+        # Enviar el correo al proveedor
+        try:
+            send_mail(
+                subject=asunto,
+                message=mensaje,
+                from_email=remitente,
+                recipient_list=[proveedor.correo],
+                fail_silently=False,
+            )
+
+            producto = Producto.objects.get(id_producto=producto_id)  # Obtener la instancia de Producto
+            SolicitudStock.objects.create(
+                plantilla=mensaje,
+                fecha_solicitud=timezone.now(),
+                id_producto=producto,  # Pasamos la instancia del Producto
+                id_proveedor=proveedor
+            )
+
+            print("Correo enviado con éxito")
+            messages.success(request, 'Solicitud de stock enviada y registrada exitosamente.')
+            print(f'Solicitud de stock enviada y registrada exitosamente. a {destinatario_email}')
+        except Exception as e:
+            messages.error(request, f'Error al enviar el correo: {str(e)}')
+            print(f'Error al enviar el correo: {str(e)}')
+
+    return redirect('ver_inventario')
+
+
+def obtener_plantilla(request, producto_id):
+    solicitud = SolicitudStock.objects.filter(id_producto=producto_id).order_by('-fecha_solicitud').first()
+    plantilla = solicitud.plantilla if solicitud else ''
+    return JsonResponse({'plantilla': plantilla})
 
 @role_required(allowed_roles=['Admin'])
 def edit_pro(request, producto_id):
@@ -223,6 +309,13 @@ def edit_pro(request, producto_id):
         'sugerencias': [{'nombre_cliente': sug.id_usuario.nombres, 'mensaje': sug.mensaje} for sug in sugerencias]
     })
 
+
+# Vista para eliminar el producto
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    producto.delete()
+    messages.success(request, 'Producto eliminado con éxito.')
+    return redirect('ver_inventario') 
 
 @role_required(allowed_roles=['Admin'])
 def agregar_pro(request):
@@ -753,9 +846,3 @@ def logout_view(request):
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('login')
 
-# Vista para eliminar el producto
-def eliminar_producto(request, producto_id):
-    producto = get_object_or_404(Producto, id_producto=producto_id)
-    producto.delete()
-    messages.success(request, 'Producto eliminado con éxito.')
-    return redirect('ver_inventario') 
