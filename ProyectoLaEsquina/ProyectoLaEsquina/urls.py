@@ -21,6 +21,8 @@ urlpatterns = [
     path('cambiar_estado/<int:pedido_id>/', views.cambiar_estado, name='cambiar_estado'),
     path('historial_solicitudes/',views.historial_solicitudes, name='historial_solicitudes'),
     path('cambiar_estado_solicitud/<int:pedido_id>/', views.cambiar_estado_solicitud, name='cambiar_estado_solicitud'),
+    #path('enviar_pedido/', views.enviar_pedido, name='enviar_pedido'),
+
 
     # Aseguradora
     path('aseguradora_view/', views.aseguradora_view, name='aseguradora_view'),

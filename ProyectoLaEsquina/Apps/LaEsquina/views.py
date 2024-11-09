@@ -4,12 +4,10 @@ from .models import *
 from .forms import CrearCuentaForm
 from django.contrib.auth import logout as auth_logout
 import requests
-from django.shortcuts import redirect
 from urllib.parse import urlencode
 from django.utils import timezone
 from django.db.models import Sum
-from django.shortcuts import redirect, get_object_or_404
-from .models import *
+from django.core.mail import send_mail
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -370,6 +368,10 @@ def cambiar_estado_solicitud(request, pedido_id):
         
         # Redirige a la vista de solicitudes
         return redirect('historial_solicitudes')
+
+
+# STOCK
+
 
 
 # FIN ADMIN
