@@ -150,11 +150,54 @@
                             <h6>Código: {{ servicio.id_servicio }}</h6>
                             <h6>Precio: ${{ servicio.precio }}</h6>
                             <p class="card-text">{{ servicio.descripcion }}</p>
-                            <a href="#" class="btn btn-danger">Solicitar servicio</a>
+                            {% if request.session.user_id %}
+                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalFormulario" data-servicio-id="{{ servicio.id_servicio }}" data-servicio-nombre="{{ servicio.nombre_servicio }}">Solicitar servicio</button>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-danger">Inicie sesión para solicitar servicio</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                {% endfor %}
+            {% endfor %}
+
+            <!-- Modal -->
+            <div class="modal fade" id="modalFormulario" tabindex="-1" aria-labelledby="modalFormularioLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #B10B0D;">
+                            <h5 class="modal-title" id="modalFormularioLabel" style="color: white;">Crear Solicitud de Servicio</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{% url 'crear_pedido_servicio_cliente' %}" method="post">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="direccion_servicio">Dirección de servicio</label>
+                                    <input type="text" id="direccion_servicio" name="direccion_servicio" 
+                                           value="{{ direccion_entrega }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="fecha_entrega" class="form-label">Fecha de solicitud:</label>
+                                    <input type="date" class="form-control" id="fecha_entrega" name="fecha_entrega" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hora_servicio" class="form-label">Hora:</label>
+                                    <input type="time" class="form-control" id="hora_servicio" name="hora_servicio" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="servicio" class="form-label">Servicio:</label>
+                                    <input type="text" class="form-control" id="servicio" name="servicio" readonly required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                    <button type="submit" class="btn btn-primary">Enviar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             </div>
         </div>
     </section>
@@ -164,3 +207,42 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
+
+<script>
+    const modalFormulario = document.getElementById('modalFormulario');
+    modalFormulario.addEventListener('show.bs.modal', function (event) {
+        // Obtén el botón que activó el modal
+        const button = event.relatedTarget;
+        // Extrae la información del servicio (ID y nombre)
+        const servicioId = button.getAttribute('data-servicio-id');
+        const servicioNombre = button.getAttribute('data-servicio-nombre');
+
+        // Encuentra el campo de "Servicio" y asigna el nombre del servicio
+        const servicioField = modalFormulario.querySelector('#servicio');
+        servicioField.value = servicioNombre;
+
+        // Si es necesario, puedes agregar el ID del servicio al formulario
+        const hiddenServicioField = document.createElement('input');
+        hiddenServicioField.type = 'hidden';
+        hiddenServicioField.name = 'servicio';
+        hiddenServicioField.value = servicioId;
+        modalFormulario.querySelector('form').appendChild(hiddenServicioField);
+    });
+
+    // Función para activar la edición de la dirección
+    function editarDireccion() {
+        const direccionInput = document.getElementById('direccion_servicio');
+        const botonEditar = document.getElementById('editar-direccion');
+
+        // Hacer editable el campo
+        direccionInput.removeAttribute('readonly');
+        direccionInput.focus();
+
+        // Cambiar el texto y el estilo del botón
+        botonEditar.textContent = 'Guardar Dirección';
+        botonEditar.classList.replace('btn-secondary', 'btn-primary');
+        botonEditar.setAttribute('type', 'submit');  // Esto hace que el botón de editar se convierta en un botón de guardar
+    }
+
+
+</script>

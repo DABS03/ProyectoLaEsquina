@@ -43,6 +43,7 @@ urlpatterns = [
     path('mi_carrito/', views.mi_carrito_view, name='mi_carrito'),
     path('eliminar_del_carrito/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
     path('enviar_sugerencia/', views.enviar_sugerencia, name='enviar_sugerencia'),
+    path('crear_pedido_servicio/cliente/', views.crear_pedido_servicio_cliente, name='crear_pedido_servicio_cliente'),
 
     #Pedidos
     path('realizar_pedido/', views.realizar_pedido, name='realizar_pedido'),

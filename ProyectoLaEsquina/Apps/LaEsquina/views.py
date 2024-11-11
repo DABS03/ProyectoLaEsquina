@@ -10,6 +10,7 @@ from django.db.models import Sum
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -463,10 +464,6 @@ def cambiar_estado_solicitud(request, pedido_id):
         return redirect('historial_solicitudes')
 
 
-# STOCK
-
-
-
 # FIN ADMIN
 ################################
 ################################
@@ -755,7 +752,7 @@ def aseguradora_view(request):
     
     return render(request, 'aseguradora.html', context)
 
-
+# Para la aseguradora
 @role_required(allowed_roles=['Aseguradora'])
 def crear_pedido_servicio(request):
     if request.method == 'POST':
@@ -794,7 +791,56 @@ def crear_pedido_servicio(request):
     servicios = Servicio.objects.all()
     return render(request, 'crear_pedido_servicio.html', {'servicios': servicios})
 
-# FIN Aseguradora
+# Para el cliente
+@role_required(allowed_roles=['Cliente'])
+def crear_pedido_servicio_cliente(request):
+    user_id = request.session.get('user_id')
+    usuario = Usuario.objects.get(id_usuario=user_id)
+
+    # Si el método es POST, procesar los datos del formulario
+    if request.method == 'POST':
+        direccion_servicio = request.POST.get('direccion_servicio')
+        fecha_entrega = request.POST.get('fecha_entrega')
+        hora_servicio = request.POST.get('hora_servicio')
+        servicio_id = request.POST.get('servicio')
+
+        # Si el cliente editó la dirección, la actualizamos
+        if direccion_servicio != usuario.direccion:
+            usuario.direccion = direccion_servicio
+            usuario.save()
+
+        # Crear un nuevo pedido con estado pendiente
+        estado_pendiente = EstadoPedido.objects.get(nombre_estado="Pendiente")  # ID 4
+        pedido = Pedido.objects.create(
+            fecha_pedido=timezone.now(),
+            fecha_entrega=fecha_entrega,
+            comentarios="",
+            total=0,  # Calcula el total según el precio del servicio
+            id_estado=estado_pendiente,
+            id_usuario=usuario,
+        )
+
+        # Crear el PedidoServicio
+        servicio = Servicio.objects.get(id_servicio=servicio_id)
+        PedidoServicio.objects.create(
+            id_pedido=pedido,
+            id_servicio=servicio,
+            precio=servicio.precio,
+            direccion_servicio=direccion_servicio,
+            hora_servicio=hora_servicio,
+        )
+
+        return redirect('cliente_view')
+
+    servicios = Servicio.objects.all()
+
+    # Obtener la dirección actual del cliente
+    direccion_entrega = usuario.direccion
+
+    return render(request, 'crear_pedido_servicio_cliente.html', {
+        'servicios': servicios,
+        'direccion_entrega': direccion_entrega,  # Pasar la dirección actual del usuario
+    })
 
 def crear_cuenta(request):
     if request.method == 'POST':
@@ -818,11 +864,17 @@ def crear_cuenta(request):
 def cliente_view(request):
     productos = Producto.objects.all()
     servicios = Servicio.objects.all()
+    user_id = request.session.get('user_id')
+    usuario = get_object_or_404(Usuario, id_usuario=user_id)
+    direccion_entrega = usuario.direccion  # La dirección del cliente
+
     context = {
         'productos': productos,
         'servicios': servicios,
+        'direccion_entrega': direccion_entrega  # Pasamos la dirección al contexto
     }
     return render(request, 'cliente.html', context)
+
 
 def enviar_sugerencia(request):
     if request.method == 'POST':
