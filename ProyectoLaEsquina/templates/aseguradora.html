@@ -15,6 +15,11 @@
                 <img src="{% static 'img/icon_esquina_todos.jpg' %}" alt="Logo" width="200" height="60">
             </a>
             <ul class="nav justify-content-end">
+              <li class="nav-item mx-auto">
+                    <h4 class="text-white text-center" style="margin: 0; font-family: 'Arial', sans-serif; font-size: 1.5rem; padding-right: 70vh; padding-top: 1vh;">
+                            Aseguradora
+                    </h4>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="icon_noti dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="{% static 'img/circle_accou.png' %}" alt="User Icon" width="50" height="50">
@@ -27,17 +32,21 @@
         </div>
     </nav>
 
+    <div class="alert-container">
+      {% if messages %}
+          {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+          {% endfor %}
+      {% endif %}
+  </div>
+
     <!-- Filter and Create Ticket Button -->
     <div class="container_filter" style="padding-top: 15vh; display: flex; justify-content: space-between; align-items: center; padding-left: 5vh; padding-right: 5vh;">
         <div class="d-flex align-items-center">
-            <h6 style="margin-right: 10px;">Ordenar por:</h6>
-            <select class="form-select" style="width: 400px;">
-                <option selected>Seleccione</option>
-                <option value="1">Precio</option>
-                <option value="2">Nombre</option>
-                <option value="3">Marca</option>
-            </select>
-            <a href="#"><img src="{% static 'img/filtrar.png' %}" alt="Filtrar" width="30" height="30" style="margin-left: 10px;"></a>
+
         </div>
         <button class="btn" style="background-color: #B10B0D; color: white;" data-bs-toggle="modal" data-bs-target="#modalFormulario">Crear Solicitud</button>
     </div> 
@@ -108,7 +117,7 @@
                             <th scope="row">{{ servicio.id_pedido.id_pedido }}</th>
                             <td>{{ servicio.id_servicio.nombre_servicio }}</td>
                             <td>{{ servicio.direccion_servicio }}</td>
-                            <td>{{ servicio.id_pedido.fecha_pedido }}</td>
+                            <td>{{ servicio.id_pedido.fecha_entrega }}</td>
                             <td>{{ servicio.hora_servicio }}</td>
                             <td>{{ servicio.precio }}</td>
                             <td>{{ servicio.id_pedido.id_estado.nombre_estado }}</td>

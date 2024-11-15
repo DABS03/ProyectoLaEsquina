@@ -90,7 +90,6 @@
                             <th scope="col">Precio</th>
                             <th scope="col">Cantidad</th>
                             <th scope="col">Categoría</th>
-                            <th scope="col"></th>
                             <th scope="col">Pedir Stock</th>
                         </tr>
                     </thead>
@@ -120,11 +119,6 @@
                         <td>${{ producto.precio }}</td>
                         <td>{{ producto.cantidad_stock }}</td>
                         <td>{{ producto.id_categoria_producto.nombre }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <input type="number" class="mx-3 quantity" id="quantity{{ producto.id_producto }}" value="1" min="1" style="width: 50px;">
-                            </div>
-                        </td>
 
                         <td>
                             <button class="btn" style="background-color: #B10B0D; color: white;" data-bs-toggle="modal" data-bs-target="#modalPedido" onclick="openModal('{{ producto.nombre_producto }}', '{{ producto.id_producto }}')">Pedir</button>

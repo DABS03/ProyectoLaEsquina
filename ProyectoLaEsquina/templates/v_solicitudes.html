@@ -48,15 +48,6 @@
     </div>
     <div class="d-flex flex-column align-items-center justify-content-center" style="padding-top: 15vh; width: 100%; padding-left: 5vh; padding-right: 5vh;"" >
         <div style="display: flex; align-items: center;">
-            <h6 style="margin-right: 10px;">Ordenar por:</h6>
-            <select class="form-select" aria-label="Default select example" style="width: 400px;">
-                <option selected>Seleccione</option>
-                <option value="1">Fecha</option>
-                <option value="2">Nombre</option>
-            </select>
-            <a class="icon_filter" href="#">
-                <img src="{% static 'img/filtrar.png' %}" alt="" width="30" height="30" style="margin-left: 10px;">
-            </a> 
         </div>
     </div>
         <section class="container_main" style="padding-top: 10vh; display: flex; justify-content: center; margin-left: 20px;">
@@ -90,7 +81,7 @@
                             </td>
                             <td>{{ pedido.servicio }}</td>
                             <td>{{ pedido.direccion_servicio }}</td>
-                            <td>{{ pedido.fecha_pedido }}</td>
+                            <td>{{ pedido.fecha_entrega }}</td>
                             <td>{{ pedido.hora_servicio }}</td>
                             <td>{{ pedido.subtotal }}</td>
                             <td>

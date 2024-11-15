@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import *
@@ -11,6 +12,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from datetime import datetime
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -417,7 +419,7 @@ def historial_solicitudes(request):
                 'id_pedido': pedido_servicio.id_pedido.id_pedido,
                 'nombre_cliente': pedido_servicio.id_pedido.id_usuario.nombres,
                 'direccion_servicio': pedido_servicio.direccion_servicio,
-                'fecha_pedido': pedido_servicio.id_pedido.fecha_pedido,
+                'fecha_entrega': pedido_servicio.id_pedido.fecha_entrega,
                 'servicio': pedido_servicio.id_servicio.nombre_servicio,
                 'estado': pedido_servicio.id_pedido.id_estado.nombre_estado,
                 'hora_servicio': pedido_servicio.hora_servicio,
@@ -762,8 +764,22 @@ def crear_pedido_servicio(request):
         # Obtener los datos del formulario
         direccion_servicio = request.POST.get('direccion_servicio')
         fecha_entrega = request.POST.get('fecha_entrega')
+
+       # Convertir fecha_entrega a objeto de tipo date
+        fecha_entrega_date = datetime.strptime(fecha_entrega, "%Y-%m-%d").date()
+        now_date = timezone.now().date()
+
+        # Validar que la fecha de entrega no sea anterior a la fecha actual
+        if fecha_entrega_date < now_date:
+            messages.error(request, "La fecha de entrega no puede ser anterior a la fecha actual.")
+            return redirect('aseguradora_view')
+
+
+
         hora_servicio = request.POST.get('hora_servicio')
         servicio_id = request.POST.get('servicio')
+
+
 
         # Crear un nuevo pedido con estado pendiente
         estado_pendiente = EstadoPedido.objects.get(nombre_estado="Pendiente")  # ID 4
@@ -801,6 +817,17 @@ def crear_pedido_servicio_cliente(request):
     if request.method == 'POST':
         direccion_servicio = request.POST.get('direccion_servicio')
         fecha_entrega = request.POST.get('fecha_entrega')
+        
+      # Convertir fecha_entrega a objeto de tipo date
+        fecha_entrega_date = datetime.strptime(fecha_entrega, "%Y-%m-%d").date()
+        now_date = timezone.now().date()
+
+        # Validar que la fecha de entrega no sea anterior a la fecha actual
+        if fecha_entrega_date < now_date:
+            messages.error(request, "La fecha de entrega no puede ser anterior a la fecha actual.")
+            return redirect('cliente_view')
+
+
         hora_servicio = request.POST.get('hora_servicio')
         servicio_id = request.POST.get('servicio')
 
